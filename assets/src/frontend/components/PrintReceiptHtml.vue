@@ -64,12 +64,22 @@
                         <td colspan="2">{{ __( 'Payment method', 'wepos' ) }}</td>
                         <td class="price">{{ printdata.gateway.title || '' }}</td>
                     </tr>
+                    <tr>
+                      {{ /* partial payment */}}
+                      <td colspan="2">{{ __( 'Payment Type', 'wepos' ) }}</td>
+                      <td class="price">{{ printdata.paymenttype === 'partial' ? 'Partial Payment' : 'Full Payment' }}</td>
+                    </tr>
                     <template v-if="printdata.gateway.id='wepos_cash'">
                         <tr>
                             <td colspan="2">{{ __( 'Cash Given', 'wepos' ) }}</td>
                             <td class="price">{{ formatPrice( printdata.cashamount ) }}</td>
                         </tr>
-                        <tr>
+                        {{ /* partial payment */}}
+                      <tr v-if="printdata.paymenttype === 'partial' && printdata.dueamount > 0">
+                        <td colspan="2">{{ __( 'Due Amount', 'wepos' ) }}</td>
+                        <td class="price">{{ formatPrice( printdata.dueamount ) }}</td>
+                      </tr>
+                        <tr v-else >
                             <td colspan="2">{{ __( 'Change Money', 'wepos' ) }}</td>
                             <td class="price">{{ formatPrice( printdata.changeamount ) }}</td>
                         </tr>

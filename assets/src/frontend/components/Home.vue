@@ -547,8 +547,23 @@
                                     <p>{{ __( 'No gateway found', 'wepos' ) }}</p>
                                 </template>
                             </div>
+
                             <template v-if="orderdata.payment_method=='wepos_cash'">
+                              {{ /** Partial Payment **/ }}
                                 <div class="payment-option">
+                                  <div v-if="settings.wepos_general.enable_partial_payment === 'yes'" class="payment-type-wrapper">
+                                    <div class="payment-type-body">
+                                      <label>
+                                        <input type="radio" value="full" v-model="paymentType" ref="paymenttype" checked>
+                                        <span>Full Payment</span>
+                                      </label>
+                                      <label>
+                                        <input type="radio" v-model="paymentType" ref="paymenttype" value="partial">
+                                        <span>Partial Payment</span>
+                                      </label>
+                                    </div>
+                                  </div>
+
                                     <div class="payment-amount">
                                         <div class="input-part">
                                             <div class="input-wrap">
@@ -559,7 +574,10 @@
                                                 </div>
                                             </div>
                                         </div>
-                                        <div class="change-money">
+                                      <div v-if="dueAmountPartial > 0 && paymentType === 'partial'" class="due-money">
+                                        <p>{{ __( 'Due money', 'wepos' ) }}: {{ formatPrice( dueAmountPartial ) }}</p>
+                                      </div>
+                                        <div v-else class="change-money">
                                             <p>{{ __( 'Change money', 'wepos' ) }}: {{ formatPrice( changeAmount ) }}</p>
                                         </div>
                                     </div>
@@ -667,6 +685,8 @@ export default {
             afterMainContents: wepos.hooks.applyFilters( 'wepos_after_main_content', [] ),
             beforCartPanels: wepos.hooks.applyFilters( 'wepos_before_cart_panel', [] ),
             couponData: {},
+          /* partial payment */
+            paymentType: 'full',
         }
     },
     computed: {
@@ -729,7 +749,12 @@ export default {
                 }
             }
             return [];
-        }
+        },
+      /* partial payment */
+      dueAmountPartial() {
+        const dueMoney = this.$store.getters['Cart/getTotal'] - this.unFormat(this.cashAmount);
+        return dueMoney > 0 ? dueMoney: 0;
+      },
     },
 
     watch: {
@@ -763,6 +788,11 @@ export default {
         cashAmount( newdata, olddata ) {
             this.ableToProcess();
         },
+
+        /* partial payment */
+      paymentType( newdata, olddata ) {
+        this.ableToProcess();
+      }
     },
 
     methods: {
@@ -820,12 +850,10 @@ export default {
             let canProcess = this.cartdata.line_items.length > 0 && this.isSelectGateway();
 
             if( this.selectedGateway === 'wepos_cash' ) {
-                 canProcess = this.unFormat(this.cashAmount)
-                    >= this.truncateNumber(this.$store.getters['Cart/getTotal'])
+                 canProcess = (this.unFormat(this.cashAmount)
+                    >= this.truncateNumber(this.$store.getters['Cart/getTotal']) || this.paymentType === 'partial')
                     && canProcess;
             }
-
-            console.log( canProcess );
 
             this.$store.dispatch( 'Order/setCanProcessPaymentAction', canProcess );
         },
@@ -854,10 +882,14 @@ export default {
                             key: '_wepos_cash_tendered_amount',
                             value: self.cashAmount.toString()
                         },
-                        {
-                            key: '_wepos_cash_change_amount',
-                            value: self.changeAmount.toString()
-                        }
+                      {
+                        key: '_wepos_cash_paid_amount',
+                        value: self.cashAmount.toString()
+                      },
+                      {
+                        key: '_wepos_cash_payment_type',
+                        value: self.paymentType
+                      }
                     ]
                 }, this.orderdata, this.cartdata );
 
@@ -903,7 +935,10 @@ export default {
                             order_id: response.number,
                             order_date: response.date_created,
                             cashamount: this.cashAmount.toString(),
-                            changeamount: this.changeAmount.toString()
+                            changeamount: this.changeAmount.toString(),
+                          /* partial payment */
+                            dueamount: this.dueAmountPartial.toString(),
+                            paymenttype: this.paymentType
                         }, orderdata );
                       $contentWrap.unblock();
                     } else {
@@ -2396,6 +2431,51 @@ export default {
         }
 
     }
+
+  .payment-type-wrapper {
+    padding: 0 1px;
+
+    .payment-type-body {
+      display: inline-flex;
+      flex-wrap: wrap;
+      border: 1px solid #eaedf0;
+      border-bottom: 0;
+
+      label {
+        flex: 1 0 21%;
+
+        span{
+          background: #fbfcfe;
+          box-sizing: border-box;
+          color: black;
+          cursor: pointer;
+          display: block;
+          font-size: 20px;
+          width: 200px;
+          line-height: 50px;
+          text-align: center;
+        }
+
+        input[type="radio"] {
+          display: none;
+        }
+        span:hover,
+        input[type="radio"]:checked + span {
+          background: rgba(26, 188, 156);
+          color: #fff;
+        }
+      }
+    }
+    }
+
+}
+
+.due-money {
+  background: #fff;
+  border-top: 1px solid #eaedf0;
+  color: #FE1365FF;
+  font-size: 15px;
+  text-align: center;
 }
 
 /* Media queries */
