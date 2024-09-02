@@ -10,4 +10,10 @@ export default {
             }
         }
     },
+
+    hasExpiryStock(product, expiryDate, quantity) {
+        const expiry = product.stock_expiry?.find(item => item.date === expiryDate);
+        return parseInt(expiry?.quantity) >= quantity;
+    }
+
 };
