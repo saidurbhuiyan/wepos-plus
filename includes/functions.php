@@ -1,5 +1,7 @@
 <?php
 
+use Automattic\WooCommerce\Internal\DataStores\Orders\CustomOrdersTableController;
+
 /**
  * WePOS Footer
  *
@@ -198,6 +200,18 @@ function wepos_get_settings_fields() {
                     'custom' => __( 'Custom field', 'wepos' ),
                 ]
             ],
+
+            'enable_partial_payment' => [
+	            'name'    => 'enable_partial_payment',
+	            'label'   => __( 'Enable Partial Payment', 'wepos' ),
+	            'desc'    => __( 'Choose if partial payment is allowed in POS cart and checkout', 'wepos' ),
+	            'type'    => 'select',
+	            'default' => 'yes',
+	            'options' => [
+		            'yes' => __( 'Yes', 'wepos' ),
+		            'no'  => __( 'No', 'wepos' ),
+	            ],
+            ],
         ],
         'wepos_receipts' => [
             'receipt_header' => [
@@ -241,6 +255,36 @@ function wepos_get_option( $option, $section, $default = '' ) {
 }
 
 /**
+ * Get wepos settings
+ * @return array
+ */
+function get_wepos_settings()
+{
+	$settings = [];
+
+	if (!function_exists('wepos_get_settings_fields')) {
+		return $settings;
+	}
+
+	foreach ( wepos_get_settings_fields() as $section_key => $settings_options ) {
+		$section_option = get_option( $section_key, [] );
+		foreach ( $settings_options as $settings_key => $settings_value ) {
+			$settings[$section_key][$settings_key] = isset( $section_option[$settings_key] ) ? $section_option[$settings_key] : $settings_options[$settings_key]['default'];
+		}
+	}
+
+	$tax_display_on_shop = get_option( 'woocommerce_tax_display_shop', 'excl' );
+	$tax_display_on_cart = get_option( 'woocommerce_tax_display_cart', 'excl' );
+	$settings['woo_tax'] = [
+		'wc_tax_display_shop' => $tax_display_on_shop,
+		'wc_tax_display_cart' => $tax_display_on_cart,
+	];
+
+	return $settings;
+
+}
+
+/**
  * Detects if current page is wePOS frontend page
  *
  * @return bool
@@ -257,40 +301,13 @@ function wepos_is_frontend() {
     return $hasPermission;
 }
 
-function wepos_get_product_price( $product ) {
-    $price = $product->get_price();
-
-    if ( $product->is_taxable() ) {
-
-        if ( WC()->cart->display_prices_including_tax() ) {
-            $row_price        = wc_get_price_including_tax( $product, array( 'qty' => $quantity ) );
-            $product_subtotal = wc_price( $row_price );
-
-            if ( ! wc_prices_include_tax() && WC()->cart->get_subtotal_tax() > 0 ) {
-                $product_subtotal .= ' <small class="tax_label">' . WC()->countries->inc_tax_or_vat() . '</small>';
-            }
-        } else {
-            $row_price        = wc_get_price_excluding_tax( $product, array( 'qty' => $quantity ) );
-            $product_subtotal = wc_price( $row_price );
-
-            if ( wc_prices_include_tax() && $this->get_subtotal_tax() > 0 ) {
-                $product_subtotal .= ' <small class="tax_label">' . WC()->countries->ex_tax_or_vat() . '</small>';
-            }
-        }
-    } else {
-        $row_price        = $price * $quantity;
-        $product_subtotal = wc_price( $row_price );
-    }
-
-    return apply_filters( 'woocommerce_cart_product_subtotal', $product_subtotal, $product, $quantity, $this );
-}
-
 /**
  * Function current_datetime() compatibility for wp version < 5.3
  *
+ * @return DateTimeImmutable
+ * @throws Exception
  * @since WEPOS_SINCE
  *
- * @return DateTimeImmutable
  */
 function wepos_current_datetime() {
     if ( function_exists( 'current_datetime' ) ) {
@@ -303,9 +320,10 @@ function wepos_current_datetime() {
 /**
  * Function wp_timezone() compatibility for wp version < 5.3
  *
+ * @return DateTimeZone
+ * @throws Exception
  * @since WEPOS_SINCE
  *
- * @return DateTimeZone
  */
 function wepos_wp_timezone() {
     if ( function_exists( 'wp_timezone' ) ) {
@@ -343,4 +361,52 @@ function wepos_wp_timezone_string() {
     $tz_offset = sprintf( '%s%02d:%02d', $sign, $abs_hour, $abs_mins );
 
     return $tz_offset;
+}
+
+/**
+ * Check if current user is an admin
+ * @return bool
+ */
+function is_current_user_admin ()
+{
+	return current_user_can( 'manage_woocommerce' ) && current_user_can( 'administrator' );
+}
+
+
+/**
+ * Check if HPOS is enabled
+ * @return bool
+ */
+function is_hpos_enabled() {
+	return class_exists(CustomOrdersTableController::class) &&
+	       wc_get_container()->get(CustomOrdersTableController::class)->custom_orders_table_usage_is_enabled();
+}
+
+/**
+ * Get HPOS Screen ID
+ * @return string
+ */
+function admin_shop_order_screen() {
+	$screen = 'shop_order';
+	if (is_hpos_enabled()) {
+		$screen = function_exists('wc_get_page_screen_id') ? wc_get_page_screen_id('shop-order') : 'woocommerce_page_wc-orders';  // Traditional Screen ID
+	}
+	return $screen;
+}
+
+/**
+ * Get HPOS Hook Names from legacy hook
+ * @param $hook_name
+ *
+ * @return string
+ */
+function get_hpos_hook_names($hook_name) {
+	$hpos_hook_names = [
+		'manage_edit-shop_order_columns' => 'manage_woocommerce_page_wc-orders_columns',
+		'manage_shop_order_posts_custom_column' => 'manage_woocommerce_page_wc-orders_custom_column',
+		'bulk_actions-edit-shop_order' => 'bulk_actions-woocommerce_page_wc-orders',
+		'handle_bulk_actions-edit-shop_order' => 'handle_bulk_actions-woocommerce_page_wc-orders',
+	];
+
+	return is_hpos_enabled() && isset($hpos_hook_names[$hook_name]) ? $hpos_hook_names[$hook_name] : $hook_name;
 }

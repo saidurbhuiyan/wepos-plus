@@ -28,6 +28,7 @@ class Manager {
             WEPOS_INCLUDES . '/REST/CustomerController.php' => '\WeDevs\WePOS\REST\CustomerController',
             WEPOS_INCLUDES . '/REST/ProductController.php'  => '\WeDevs\WePOS\REST\ProductController',
             WEPOS_INCLUDES . '/REST/CouponController.php'   => '\WeDevs\WePOS\REST\CouponController',
+			WEPOS_INCLUDES . '/REST/PartialPaymentController.php'    => '\WeDevs\WePOS\REST\PartialPaymentController',
         ) );
 
         // Init REST API routes.
@@ -64,12 +65,15 @@ class Manager {
         $data           = $response->get_data();
         $type           = isset( $data['type'] ) ? $data['type'] : '';
         $variation_data = [];
-        $tax_display_on_shop = get_option( 'woocommerce_tax_display_shop', 'excl' );
         $tax_display_on_cart = get_option( 'woocommerce_tax_display_cart', 'excl' );
         $tax_calculations    = get_option( 'woocommerce_prices_include_tax', 'no' );
 
         if ( 'variable' == $type ) {
             foreach( $data['variations'] as $variation ) {
+                if (is_array($variation) ) {
+                    $variation_data[] = $variation;
+                    continue;
+                }
                 $variation_api_class = new \WC_REST_Product_Variations_Controller();
                 $response = $variation_api_class->get_item(
                     [
@@ -86,7 +90,6 @@ class Manager {
         $price_incl_tax                = wc_get_price_including_tax( $product );
         $tax_amount                    = (float)$price_incl_tax - (float)$price_excl_tax;
 
-        $data['variations']            = [];
         $data['variations']            = $variation_data;
         $data['tax_amount']            = wc_format_decimal( $tax_amount, wc_get_price_decimals() );
 

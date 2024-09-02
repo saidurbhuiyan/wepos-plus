@@ -1,12 +1,12 @@
 <?php
 /*
-Plugin Name: wePOS - Point Of Sale (POS) for WooCommerce
-Plugin URI: https://wedevs.com/wepos
+Plugin Name: wePOSPlus - Point Of Sale (POS) for WooCommerce
+Plugin URI:
 Description: A beautiful and fast Point of Sale (POS) system for WooCommerce
-Version: 1.2.8
-Author: weDevs
-Author URI: https://wedevs.com/
-Text Domain: wepos
+Version: 1.3.0
+Author: weDevs + saidur
+Author URI:
+Text Domain: weposPlus
 Domain Path: /languages
 WC requires at least: 5.0.0
 WC tested up to: 8.9.2
@@ -41,6 +41,23 @@ License URI: https://www.gnu.org/licenses/gpl-2.0.html
  */
 
 // don't call the file directly
+use WeDevs\WePOS\Admin\Admin;
+use WeDevs\WePOS\Admin\Discounts;
+use WeDevs\WePOS\Admin\LimitedTimePromotion;
+use WeDevs\WePOS\Admin\Products;
+use WeDevs\WePOS\Admin\Settings;
+use WeDevs\WePOS\Admin\Updates;
+use WeDevs\WePOS\Assets;
+use WeDevs\WePOS\Common;
+use WeDevs\WePOS\CustomManager;
+use WeDevs\WePOS\Dokan;
+use WeDevs\WePOS\ExpiryStockManager;
+use WeDevs\WePOS\Frontend;
+use WeDevs\WePOS\Installer;
+use WeDevs\WePOS\PartialPayment;
+use WeDevs\WePOS\REST\Manager as RestManager;
+use WeDevs\WePOS\Gateways\Manager as PaymentGatewayManager;
+
 if ( ! defined( 'ABSPATH' ) ) {
     exit;
 }
@@ -57,7 +74,7 @@ final class WePOS {
      *
      * @var string
      */
-    public $version = '1.2.8';
+    public $version = '1.3.0';
 
     /**
      * Holds various class instances
@@ -91,10 +108,12 @@ final class WePOS {
 
         add_action( 'woocommerce_loaded', [ $this, 'init_plugin' ] );
         add_action( 'woocommerce_init', [ $this, 'on_wc_init' ] );
+        add_action('before_woocommerce_init', [$this,'before_woocommerce_hpos']);
 
 
-        // Handle Appsero tracker
-        $this->appsero_init_tracker_wepos();
+
+//        // Handle Appsero tracker
+//        $this->appsero_init_tracker_wepos();
     }
 
     /**
@@ -143,6 +162,17 @@ final class WePOS {
     public function has_woocommerce() {
         return class_exists( 'WooCommerce' );
     }
+
+    /**
+     * HPOS compatibility for WooCommerce
+     * @return void
+     */
+    public function before_woocommerce_hpos() {
+        if ( class_exists( \Automattic\WooCommerce\Utilities\FeaturesUtil::class ) ) {
+            \Automattic\WooCommerce\Utilities\FeaturesUtil::declare_compatibility( 'custom_order_tables', __FILE__, true );
+        }
+    }
+
 
     /**
      * Check whether woocommerce is installed
@@ -249,6 +279,7 @@ final class WePOS {
         define( 'WEPOS_INCLUDES', WEPOS_PATH . '/includes' );
         define( 'WEPOS_URL', plugins_url( '', WEPOS_FILE ) );
         define( 'WEPOS_ASSETS', WEPOS_URL . '/assets' );
+	    define('PARTIAL_PAYMENT_TABLE', 'wepos_order_partial_payment_stats');
     }
 
     /**
@@ -270,7 +301,7 @@ final class WePOS {
      * @return void
      */
     public function activate() {
-        $installer = new WeDevs\WePOS\Installer();
+        $installer = new Installer();
 
         $installer->run();
     }
@@ -303,6 +334,7 @@ final class WePOS {
      */
     public function includes() {
         require_once WEPOS_INCLUDES . '/functions.php';
+		require_once WEPOS_INCLUDES . '/db-functions.php';
     }
 
     /**
@@ -321,28 +353,31 @@ final class WePOS {
      * @return void
      */
     public function init_classes() {
+		new PartialPayment();
+	    new CustomManager();
+        new ExpiryStockManager();
         if ( is_admin() ) {
-            $this->container['admin']    = new WeDevs\WePOS\Admin\Admin();
-            $this->container['settings'] = new WeDevs\WePOS\Admin\Settings();
+            $this->container['admin']    = new Admin();
+            $this->container['settings'] = new Settings();
 
-            new WeDevs\WePOS\Admin\Products();
-            new WeDevs\WePOS\Admin\Updates();
-            new WeDevs\WePOS\Admin\LimitedTimePromotion();
-            new WeDevs\WePOS\Admin\Discounts();
+            new Products();
+            new Updates();
+            new LimitedTimePromotion();
+            new Discounts();
         } else {
-            $this->container['frontend'] = new WeDevs\WePOS\Frontend();
+            $this->container['frontend'] = new Frontend();
         }
 
         if ( class_exists( 'WeDevs_Dokan' ) ) {
-            $this->container['dokan'] = new WeDevs\WePOS\Dokan();
+            $this->container['dokan'] = new Dokan();
         }
 
-        $this->container['common'] = new WeDevs\WePOS\Common();
-        $this->container['rest']   = new WeDevs\WePOS\REST\Manager();
-        $this->container['assets'] = new WeDevs\WePOS\Assets();
+        $this->container['common'] = new Common();
+        $this->container['rest']   = new RestManager();
+        $this->container['assets'] = new Assets();
 
         // Payment gateway manager
-        $this->container['gateways'] = new \WeDevs\WePOS\Gateways\Manager();
+        $this->container['gateways'] = new PaymentGatewayManager();
     }
 
     /**
@@ -380,27 +415,27 @@ final class WePOS {
         }
     }
 
-    /**
-     * Initialize the plugin tracker
-     *
-     * @return void
-     */
-    public function appsero_init_tracker_wepos() {
-        $client = new Appsero\Client( '48fa1273-3e91-4cd6-9c07-d18ad6bc2f54', 'wePos', __FILE__ );
-
-        // Active insights
-        $client->insights()
-            ->add_extra( function () {
-                $products = wc_get_products( [ 'fields' => 'ids', 'paginate' => true ] );
-                $orders   = wc_get_orders( [ 'fields' => 'ids', 'paginate' => true ] );
-
-                return [
-                    'products' => $products->total,
-                    'orders'   => $orders->total
-               ];
-           } )
-           ->init();
-    }
+//    /**
+//     * Initialize the plugin tracker
+//     *
+//     * @return void
+//     */
+//    public function appsero_init_tracker_wepos() {
+//        $client = new Appsero\Client( '48fa1273-3e91-4cd6-9c07-d18ad6bc2f54', 'wePos', __FILE__ );
+//
+//        // Active insights
+//        $client->insights()
+//            ->add_extra( function () {
+//                $products = wc_get_products( [ 'fields' => 'ids', 'paginate' => true ] );
+//                $orders   = wc_get_orders( [ 'fields' => 'ids', 'paginate' => true ] );
+//
+//                return [
+//                    'products' => $products->total,
+//                    'orders'   => $orders->total
+//               ];
+//           } )
+//           ->init();
+//    }
 
     /**
      * Include cart required files in REST request
