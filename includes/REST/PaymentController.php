@@ -87,35 +87,86 @@ class PaymentController extends \WC_REST_Orders_Controller {
         return rest_ensure_response( $gateways );
     }
 
-    /**
-     * Return calculate order data
-     *
-     * @since 1.0.0
-     *
-     * @return \WP_Error|\WP_HTTP_Response|\WP_REST_Response
-     */
-    public function process_payment( $request ) {
-        $available_gateways = wepos()->gateways->available_gateway();
-        $chosen_gateway = '';
+	/**
+	 * Return calculate order data
+	 *
+	 * @since 1.0.0
+	 *
+	 * @return \WP_Error|\WP_HTTP_Response|\WP_REST_Response
+	 */
+	public function process_payment( $request ) {
+		$available_gateways = wepos()->gateways->available_gateway();
+		$chosen_gateway = '';
 
-        if ( empty( $request['id'] ) ) {
-            return new \WP_Error( 'no-order-id', __( 'No order found', 'wepos' ), [ 'status' => 401 ] );
-        }
+		if ( empty( $request['id'] ) ) {
+			return new \WP_Error( 'no-order-id', __( 'No order found', 'wepos' ), [ 'status' => 401 ] );
+		}
 
-        foreach ( $available_gateways as $class => $path ) {
-            $gateway = new $class;
+		foreach ( $available_gateways as $class => $path ) {
+			$gateway = new $class;
 
-            if ( $gateway->id == $request['payment_method'] ) {
-                $chosen_gateway = $gateway;
-            }
-        }
+			if ( $gateway->id == $request['payment_method'] ) {
+				$chosen_gateway = $gateway;
+			}
+		}
 
-        if ( empty( $chosen_gateway->id ) ) {
-            return new \WP_Error( 'no-payment-gateway', __( 'No payment gateway found for processing this payment', 'wepos' ), [ 'status' => 401 ] );
-        }
 
-        $process_payment = $chosen_gateway->process_payment( $request['id'] );
-        return rest_ensure_response( $process_payment );
-    }
+		if ( empty( $chosen_gateway->id ) ) {
+			return new \WP_Error( 'no-payment-gateway', __( 'No payment gateway found for processing this payment', 'wepos' ), [ 'status' => 401 ] );
+		}
+
+		// partial payment
+		$order = wc_get_order( $request['id'] );
+
+		// update product expiry
+		$this->update_product_expiry($order->get_meta('_wepos_product_expiry_data'));
+
+		if ($order->get_meta('_wepos_cash_payment_type') === 'partial') {
+            insert_partial_payment_stat($request['id'], $order->get_meta('_wepos_cash_paid_amount'));
+
+			$order->update_status( 'partial', __( 'Partial Payment collected via cash', 'wepos' ) );
+
+			return rest_ensure_response(array(
+				'result'   => 'success',
+			));
+		}
+
+		$process_payment = $chosen_gateway->process_payment( $request['id'] );
+		return rest_ensure_response( $process_payment );
+	}
+
+	/**
+	 * Update product expiry data of products
+	 * @param $expiryData
+	 * @return void
+	 */
+
+	private  function update_product_expiry($expiryData) {
+		$expiryData = $expiryData ? array_filter($expiryData, static fn($item) => !empty($item['expiry'])) : [];
+		if (empty($expiryData)) {
+			return;
+		}
+
+		foreach ($expiryData as $expiry) {
+			$product = wc_get_product($expiry['product_id']);
+			$stockExpire = $product->get_meta('_expiry_data');
+
+			foreach ($expiry['expiry'] as $data) {
+				foreach ($stockExpire as $key => &$exp) {
+					if ($exp['date'] === $data['date']) {
+						$exp['quantity'] -= (int)$data['quantity'];
+						if ($exp['quantity'] <= 0) {
+							unset($stockExpire[$key]);
+						}
+						break;
+					}
+				}
+				unset($exp);
+			}
+
+			$stockExpire = array_values($stockExpire);
+			update_post_meta( $expiry['product_id'], '_expiry_data',  $stockExpire );
+		}
+	}
 
 }

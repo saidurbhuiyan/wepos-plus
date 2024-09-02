@@ -8,8 +8,8 @@ class Admin {
 
     public function __construct() {
         add_action( 'admin_menu', [ $this, 'admin_menu' ] );
-        add_filter( 'manage_edit-shop_order_columns', [ $this, 'add_pos_order_column' ], 10 );
-        add_action( 'manage_shop_order_posts_custom_column', [ $this, 'render_is_pos_order_content' ], 10, 2);
+        add_filter( get_hpos_hook_names('manage_edit-shop_order_columns'), [ $this, 'add_pos_order_column' ] );
+        add_action( get_hpos_hook_names('manage_shop_order_posts_custom_column'), [ $this, 'render_is_pos_order_content' ], 10, 2);
         add_action( 'admin_print_styles', [ $this, 'add_pos_column_style' ] );
     }
 
