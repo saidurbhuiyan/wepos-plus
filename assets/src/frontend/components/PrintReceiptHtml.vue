@@ -1,6 +1,25 @@
 <template>
     <div class="wepos-checkout-print-wrapper" v-if="settings.wepos_receipts">
-        <div class="header" v-html="settings.wepos_receipts.receipt_header"></div>
+        <div class="header">
+          <div v-if="printdata.billing">
+            <p v-if="printdata.billing.first_name || printdata.billing.last_name">
+              {{printdata.billing.first_name + ' ' + printdata.billing.last_name }}
+            </p>
+            <p v-if="printdata.billing.email">
+              {{printdata.billing.email }}
+            </p>
+            <p v-if="printdata.billing.phone">
+              {{printdata.billing.phone }}
+            </p>
+            <p v-if="printdata.billing.nif">
+              {{ __( 'NIF: ', 'wepos' ) }} {{printdata.billing.nif }}
+            </p>
+            <p v-if="printdata.billing.address_1">
+              {{printdata.billing.address_1 }}
+            </p>
+          </div>
+          <div v-html="settings.wepos_receipts.receipt_header"></div>
+        </div>
         <div class="order-info">
             <span class="wepos-left"><strong>{{ __( 'Order ID', 'wepos' ) }}: #{{ printdata.order_id }}</strong></span>
             <span class="wepos-right"><strong>{{ __( 'Order Date', 'wepos' ) }}: {{ formatDate( printdata.order_date ) }}</strong></span>
@@ -20,6 +39,23 @@
                                     </li>
                                 </ul>
                             </div>
+                          <div class="attribute" v-if="item.expiry && item.expiry.length > 0">
+                            <ul>
+                              <li style="display: block;">
+                          <span class="attr_name">{{
+                              __('Expiry :', 'wepos')
+                            }}</span>
+                              </li>
+                              <li style="display: block;" v-for="expiry in item.expiry">
+                                <span class="attr_value">{{ expiry.quantity }}x {{ expiry.date }}</span>
+                              </li>
+                            </ul>
+                          </div>
+                          <div v-if="hasProductDiscount(item.product_id)"
+                               style="color: #758598 !important; font-weight: 400 !important;">
+                            <small>Discount: {{ getProductDiscount(item.product_id) + ' ' + wepos.currency_format_symbol }}
+                            </small>
+                          </div>
                         </td>
                         <td class="quantity">{{ item.quantity }}</td>
                         <td class="price">
@@ -41,7 +77,11 @@
                         </td>
                         <td class="price">{{ formatPrice( printdata.subtotal ) }}</td>
                     </tr>
-                    <tr v-for="(fee,key) in printdata.coupon_lines" class="cart-meta-data">
+                    <tr v-if="hasFixedProductDiscount()" class="cart-meta-data">
+                      <td colspan="2" class="name">{{ __( 'Discount', 'wepos' ) }}</td>
+                      <td class="price">-{{ formatPrice( Math.abs(  totalFixedProductDiscount()  ) ) }}</td>
+                    </tr>
+                    <tr v-else v-for="(fee,key) in printdata.coupon_lines" class="cart-meta-data">
                         <td colspan="2" class="name">{{ __( 'Discount', 'wepos' ) }} <span class="metadata">{{ fee.discount_type == 'percent' ? fee.value + '%' : formatPrice( fee.value ) }}</span></td>
                         <td class="price">-{{ formatPrice( Math.abs( fee.total ) ) }}</td>
                     </tr>
@@ -113,7 +153,37 @@ export default {
         formatDate( date ) {
             var date = new Date( date );
             return date.toLocaleString();
+        },
+
+      hasFixedProductDiscount() {
+
+        if (!this.printdata.coupon_lines) {
+          return false;
         }
+
+        return this.printdata.coupon_lines.some(coupon => coupon.discount_type === 'fixed_product');
+      },
+
+      totalFixedProductDiscount() {
+        const discount = this.printdata.coupon_lines
+            .filter(coupon => coupon.discount_type === 'fixed_product')
+            .map(coupon => parseFloat(coupon.total))
+            .reduce((sum, value) => sum + value, 0).toFixed(2);
+
+        return discount && discount.length > 0 ? discount  : '0.00';
+      },
+
+      hasProductDiscount(productId) {
+        return this.printdata.coupon_lines.some(coupon => coupon.product_ids?.includes(productId));
+      },
+
+      getProductDiscount(productId) {
+        const discount = this.printdata.coupon_lines
+            .filter(coupon => typeof coupon.product_ids !== 'undefined' && coupon.product_ids.includes(productId))
+            .map(coupon => coupon.total);
+
+        return discount && discount.length > 0 ? discount[0] : '0.00';
+      },
     }
 };
 
@@ -152,7 +222,14 @@ export default {
         top: 0;
         width: 100%;
 
-        .header, .footer{
+        .header {
+            padding: 5px;
+            display: flex;
+            justify-content: space-between;
+            align-items: end;
+        }
+
+        .footer{
             padding: 5px;
             text-align: center;
         }
