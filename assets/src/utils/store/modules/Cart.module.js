@@ -148,6 +148,8 @@ export default {
             cartObject.stock_status       = product.stock_status;
             cartObject.backorders_allowed = product.backorders_allowed;
             cartObject.stock_quantity     = product.stock_quantity;
+            cartObject.stock_expiry       = product.stock_expiry
+            cartObject.expiry             = null
 
             var index = weLo_.findIndex( state.cartdata.line_items, { product_id: cartObject.product_id, variation_id: cartObject.variation_id} );
 
@@ -171,6 +173,7 @@ export default {
             if ( Helper.hasStock( item, item.quantity ) ) {
                 state.cartdata.line_items[itemKey].quantity++;
             }
+
         },
 
         removeCartItemQuantity( state, itemKey ) {
@@ -182,11 +185,46 @@ export default {
             }
         },
 
+        updateCartExpiryItemQuantity( state, payload ) {
+            let { key, expiryDate, quantity } = payload;
+
+            let item = state.cartdata.line_items[key];
+
+            if (!item || !expiryDate || quantity === null) return;
+            quantity = parseInt(quantity);
+
+            if (!item.expiry) item.expiry = [];
+
+            let expiryExists = item.expiry.find(expiry => expiry.date === expiryDate);
+
+            let itemQuantity = parseInt(item.quantity);
+            let expireExistQuantity = expiryExists ? parseInt(expiryExists.quantity) : 0;
+
+            if (expiryExists && quantity <= 0){
+                item.quantity = itemQuantity > expireExistQuantity ? itemQuantity - expireExistQuantity : 0;
+                item.expiry = item.expiry.filter(expiry => expiry.date !== expiryDate);
+                return;
+            }
+
+            if (!Helper.hasExpiryStock(item, expiryDate, quantity)) return;
+            let newItemQuantity = quantity;
+            if (expiryExists) {
+                newItemQuantity = quantity - expireExistQuantity;
+                expiryExists.quantity = quantity;
+            } else {
+                item.expiry.push({ date: expiryDate, quantity: quantity });
+            }
+
+            item.quantity = itemQuantity + newItemQuantity;
+
+        },
+
         toggleEditQuantity( state, itemKey ) {
             state.cartdata.line_items[itemKey].editQuantity = !  state.cartdata.line_items[itemKey].editQuantity;
         },
 
         addDiscount( state, discountData ) {
+
             state.cartdata.coupon_lines.push({
                 name: discountData.title,
                 type: 'discount',
@@ -197,6 +235,7 @@ export default {
                 tax_class: '',
                 total: 0,
                 code: discountData.value.code,
+                product_ids: discountData.value.product_ids,
             });
         },
 
@@ -241,17 +280,23 @@ export default {
                 coupon_lines: [],
             };
         },
-        calculateDiscount( state, payload ) {
-            if ( state.cartdata.coupon_lines.length > 0 ) {
-                weLo_.forEach( state.cartdata.coupon_lines, ( item, key ) => {
-                    if ( item.type == "discount" ) {
-                        if ( item.discount_type == 'percent' ) {
-                            state.cartdata.coupon_lines[key].total = '-' + ( payload.getSubtotal*Math.abs( item.value ) )/100;
+        calculateDiscount(state, payload) {
+            if (state.cartdata.coupon_lines.length > 0) {
+                state.cartdata.coupon_lines.forEach((item, key) => {
+                    if (item.type === "discount") {
+                        let discountValue = Math.abs(item.value);
+                        if (item.discount_type === 'percent') {
+                            state.cartdata.coupon_lines[key].total = `-${(payload.getSubtotal * discountValue) / 100}`;
+                        } else if (item.discount_type === 'fixed_product') {
+                            const productQuantity = state.cartdata.line_items
+                                .filter(product => item.product_ids?.includes(product.product_id))
+                                .reduce((total, product) => total + product.quantity, 0);
+                            state.cartdata.coupon_lines[key].total = `-${discountValue * productQuantity}`;
                         } else {
-                            state.cartdata.coupon_lines[key].total = '-' + Math.abs( item.value );
+                            state.cartdata.coupon_lines[key].total = `-${discountValue}`;
                         }
                     }
-                } );
+                });
             }
         },
         calculateFee( state, payload ) {
@@ -305,6 +350,10 @@ export default {
             context.commit( 'removeCartItemQuantity', itemKey );
             context.commit( 'calculateDiscount', context.getters );
             context.commit( 'calculateFee', context.getters );
+        },
+
+        updateCartExpiryItemQuantityAction(context, payload) {
+            context.commit( 'updateCartExpiryItemQuantity', payload );
         },
 
         toggleEditQuantityAction( context, itemKey ) {

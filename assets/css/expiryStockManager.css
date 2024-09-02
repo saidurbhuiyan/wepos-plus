@@ -1,0 +1,39 @@
+.expiry_label{
+    display: flex;
+    align-items: center;
+    padding: 5px 20px 5px 162px!important;
+    justify-content: space-between;
+}
+
+.expiry-field-group {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+}
+
+.expiry-field-group button.remove-expiry-field {
+    color: red;
+    border: 1px solid red;
+    padding: 0 8px;
+    background: none;
+    font-size: 18px;
+    line-height: 1;
+    cursor: pointer;
+    border-radius: 10%;
+}
+
+.expiry-field-group button.remove-expiry-field:hover,
+.expiry-field-group button.remove-expiry-field:focus
+.expiry-field-group button.remove-expiry-field:active
+{
+    color: red;
+    border: 1px solid red;
+    background: none;
+}
+
+.small-button {
+    font-size: 12px;
+    padding: 5px 10px;
+    margin-top: 10px;
+}
