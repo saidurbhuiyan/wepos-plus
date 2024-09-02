@@ -24,6 +24,11 @@
                     </g>
                 </g>
             </svg>
+          <select id="search_by" name="search_by" v-model="searchSelect" @change="searchCustomer">
+            <option value disabled>Search By</option>
+            <option value="default" selected>Default</option>
+            <option value="nif">NIF</option>
+          </select>
             <input type="text" ref="customerSearch" name="customer_search" id="customer-search" :placeholder="__( 'Search customer', 'wepos' )" v-model="serachInput" @focus.prevent="triggerFocus" @keyup="searchCustomer">
             <span class="add-new-customer flaticon-add" @click.prevent="addNewCustomer()"></span>
             <div class="search-result" v-show="showCustomerResults">
@@ -33,7 +38,12 @@
                             <li v-for="(customer, index) in customers" class="customer-search-item" :class="{'selected': index === selectedIndex}" :key="index">
                                 <a href="#" class="wepos-clearfix" @click="selectCustomer( customer )">
                                     <span class="avatar wepos-left"><img :src="customer.avatar_url" :alt="customer.first_name + ' ' + customer.last_name"></span>
-                                    <span class="name wepos-left">{{ customer.first_name + ' ' + customer.last_name }}<span class="metadata">{{ customer.email }}</span></span>
+                                    <span class="name wepos-left">{{ customer.first_name + ' ' + customer.last_name }}
+                                      <span class="metadata">{{ 'ID:' + customer.id }}</span>
+                                      <span class="metadata">{{ 'Email:' + customer.email }}</span>
+                                      <span v-if="customer.billing?.nif" class="metadata">{{ 'NIF:' + customer.billing?.nif }}</span>
+                                    </span>
+
                                     <span class="action flaticon-enter-arrow wepos-right"></span>
                                 </a>
                             </li>
@@ -71,73 +81,16 @@
                             <input type="text" :placeholder="__( 'First Name', 'wepos' )" v-model="customer.first_name">
                             <input type="text" :placeholder="__( 'Last Name', 'wepos' )" v-model="customer.last_name">
                         </div>
-                        <div class="form-row">
-                            <input type="email" :placeholder="__( 'Email', 'wepos' )" v-model="customer.email">
-                        </div>
                         <div class="form-row col-2">
-                            <input type="text" :placeholder="__( 'Address 1', 'wepos' )" v-model="customer.address_1">
-                            <input type="text" :placeholder="__( 'Address 2 (optional)', 'wepos' )" v-model="customer.address_2">
-                        </div>
-                        <div class="form-row col-2">
-                            <multiselect
-                                class="wepos-multiselect customer-country"
-                                v-model="selectedCountry"
-                                :options="getCountryList"
-                                selectLabel=""
-                                deselectLabel=""
-                                selectedLabel=""
-                                :placeholder="__( 'Select a country', 'wepos' )"
-                                @select="handleCountrySelect"
-                                @remove="removeCountrySelect"
-                                track-by="code"
-                                label="name"
-                                style="width:48.5%; margin-right:20px;"
-                            >
-                                <template slot="singleLabel" slot-scope="props">
-                                    <span v-html="props.option.name"></span>
-                                </template>
-                                <template slot="option" slot-scope="props">
-                                    <span v-html="props.option.name"></span>
-                                </template>
-                                <template slot="noResult">
-                                    <div class="no-data-found">{{ __( 'No country found', 'wepos' ) }}</div>
-                                </template>
-                            </multiselect>
-                            <!-- <input type="text" :placeholder="__( 'Country (optional)', 'wepos' )" v-model="customer.country"> -->
-                            <template v-if="stateList.length > 0">
-                                <multiselect
-                                    class="wepos-multiselect customer-state"
-                                    v-model="selectedState"
-                                    :options="stateList"
-                                    selectLabel=""
-                                    deselectLabel=""
-                                    selectedLabel=""
-                                    :placeholder="__( 'Select a state', 'wepos' )"
-                                    style="width:48.5%;"
-                                    track-by="code"
-                                    label="name"
-                                    @remove="removeStateSelect"
-                                >
-                                    <template slot="singleLabel" slot-scope="props">
-                                        <span v-html="props.option.name"></span>
-                                    </template>
-                                    <template slot="option" slot-scope="props">
-                                        <span v-html="props.option.name"></span>
-                                    </template>
-                                    <template slot="noResult">
-                                        <div class="no-data-found">{{ __( 'No country found', 'wepos' ) }}</div>
-                                    </template>
-                                </multiselect>
-                            </template>
-                            <template v-else>
-                                <input type="text" :placeholder="__( 'States (optional)', 'wepos' )" v-model="customer.state">
-                            </template>
-                        </div>
-                        <div class="form-row col-2">
-                            <input type="text" :placeholder="__( 'City (optional)', 'wepos' )" v-model="customer.city">
-                            <input type="text" :placeholder="__( 'Zip/Postal Code (optional)', 'wepos' )" v-model="customer.postcode">
+                          <input type="email" :placeholder="__( 'Email', 'wepos' )" v-model="customer.email">
                         </div>
                         <div class="form-row">
+                            <input type="text" :placeholder="__( 'Address', 'wepos' )" v-model="customer.address_1"/>
+
+                        </div>
+
+                        <div class="form-row col-2">
+                            <input type="number" :placeholder="__( 'NIF (optional)', 'wepos' )" v-model="customer.nif">
                             <input type="text" :placeholder="__( 'Phone (optional)', 'wepos' )" v-model="customer.phone">
                         </div>
                     </form>
@@ -148,18 +101,52 @@
                 <button class="add-new-customer-btn add-variation-btn" :disabled="isDisabled" @click="createCustomer()">{{ __( 'Add Customer', 'wepos' ) }}</button>
             </template>
         </modal>
+
+      <modal
+          v-if="showNewCustomerCreatedModal"
+          @close="closeNewCustomerCreatedModal"
+          width="600px" height="450px"
+      >
+        <template slot="body">
+          <div class="wepos-payment-receipt">
+            <div class="sale-completed">
+              <img :src="wepos.assets_url+ '/images/sale-completed.png'" alt="" width="120px">
+              <h2>{{ __( 'New customer created', 'wepos' ) }}</h2>
+            </div>
+
+            <div class="print-section">
+              <table class="customer-table">
+                <tr>
+                  <th>Customer ID</th>
+                  <td>{{ created_customer.id }}</td>
+                </tr>
+                <tr>
+                  <th>Customer Name</th>
+                  <td>{{ created_customer.first_name }} {{ created_customer.last_name }}</td>
+                </tr>
+                <tr>
+                  <th>Customer Email</th>
+                  <td>{{ created_customer.email }}</td>
+                </tr>
+              </table>
+            </div>
+          </div>
+        </template>
+      </modal>
     </div>
 </template>
 
 <script>
 // import Modal from './Modal.vue';
 import KeyboardControl from './KeyboardControl.vue';
+import PrintReceipt from "frontend/components/PrintReceipt.vue";
 let Modal = wepos_get_lib( 'Modal' );
 
 export default {
     name: 'CustomerSearch',
 
     components : {
+      PrintReceipt,
         Modal,
         KeyboardControl
     },
@@ -173,19 +160,16 @@ export default {
                 first_name: '',
                 last_name: '',
                 address_1: '',
-                address_2: '',
-                country: '',
-                state: '',
-                postcode: '',
-                city: '',
+                nif: '',
                 phone: '',
             },
+
+            created_customer: {},
+            showNewCustomerCreatedModal: false,
             showCustomerResults: false,
             serachInput: '',
+            searchSelect: 'default',
             showNewCustomerModal: false,
-            stateList: [],
-            selectedState: null,
-            selectedCountry: null,
             isDisabled: true
         }
     },
@@ -197,14 +181,7 @@ export default {
                 'esc': this.searchClose,
             }
         },
-        getCountryList() {
-            return Object.keys( wepos.countries ).map( ( val ) => {
-                return {
-                    code : val,
-                    name: wepos.countries[val]
-                };
-            } );
-        },
+
         orderdata() {
             return this.$store.state.Order.orderdata;
         }
@@ -239,6 +216,7 @@ export default {
         searchClose() {
             this.showCustomerResults = false;
             this.serachInput = '';
+            this.searchSelect= 'default';
             this.showNewCustomerModal= false;
             this.$refs.customerSearch.blur();
         },
@@ -262,24 +240,24 @@ export default {
         },
         closeNewCustomerModal() {
             this.customer = {
+                id: '',
                 email: '',
                 first_name: '',
                 last_name: '',
                 address_1: '',
-                address_2: '',
-                country: '',
-                state: '',
-                postcode: '',
-                city: '',
+                nif: '',
                 phone: '',
             };
-            this.selectedState = null;
-            this.selectedCountry = null;
             this.showNewCustomerModal = false;
         },
+
+      closeNewCustomerCreatedModal() {
+       this.created_customer= {};
+        this.showNewCustomerCreatedModal= false;
+      },
         searchCustomer() {
-            if ( this.serachInput ) {
-                wepos.api.get( wepos.rest.root + wepos.rest.posversion + '/customers?search=' + this.serachInput )
+            if ( this.serachInput && this.searchSelect) {
+                wepos.api.get( wepos.rest.root + wepos.rest.posversion + '/customers?search=' + this.serachInput+'&search_by='+this.searchSelect )
                 .done(response => {
                     this.customers = response;
                 });
@@ -304,11 +282,7 @@ export default {
                         first_name: this.customer.first_name,
                         last_name: this.customer.last_name,
                         address_1: this.customer.address_1,
-                        address_2: this.customer.address_2,
-                        country: this.selectedCountry !== null ? this.selectedCountry.code : '',
-                        state: this.selectedState !== null ? this.selectedState.code : this.customer.state,
-                        postcode: this.customer.postcode,
-                        city: this.customer.city,
+                        nif: this.customer.nif,
                         phone: this.customer.phone,
                         email: this.customer.email,
                     }
@@ -320,8 +294,11 @@ export default {
                 .done(response => {
                     this.serachInput = response.first_name + ' ' + response.last_name;
                     this.$emit( 'onCustomerSelected', response );
+
                     $contentWrap.unblock();
                     this.closeNewCustomerModal();
+                  this.created_customer = response;
+                    this.showNewCustomerCreatedModal= true;
                 }).fail( response => {
                     $contentWrap.unblock();
                     alert( response.responseJSON.message );
@@ -330,34 +307,7 @@ export default {
                 alert( this.__( 'Please enter an email address for customer', 'wepos' ) );
             }
         },
-        removeCountrySelect( selectedOption, id ) {
-            this.selectedState = null;
-            this.selectedCountry = null;
-            this.stateList = [];
-            this.customer.country = '';
-            this.customer.state = '';
-        },
 
-        removeStateSelect( selectedOption, id ) {
-            this.selectedState = null;
-            this.customer.state = '';
-        },
-        handleCountrySelect( selectedOption, id ) {
-            var state = wepos.states[selectedOption.code] !== undefined ? wepos.states[selectedOption.code] : [];
-            var stateKeys = Object.keys( state );
-
-            if ( stateKeys.length > 0 ) {
-                this.stateList = stateKeys.map( (val) => {
-                    return {
-                        code: val,
-                        name: state[val]
-                    };
-                } );
-            } else {
-                this.stateList = state;
-                this.selectedState = null;
-            }
-        },
         generatePassword( length ) {
             var charset = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789",
                 retVal = "";
@@ -402,5 +352,28 @@ export default {
         }
     }
 }
+.customer-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 20px 0;
 
+  th, td {
+    padding: 10px;
+    border: 1px solid #ccc;
+    text-align: left;
+  }
+
+  th {
+    background-color: #f4f4f4;
+    font-weight: bold;
+  }
+
+  tr:nth-child(even) {
+    background-color: #f9f9f9;
+  }
+
+  tr:hover {
+    background-color: #eaeaea;
+  }
+}
 </style>
