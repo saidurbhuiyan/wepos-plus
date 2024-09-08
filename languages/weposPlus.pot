@@ -4,7 +4,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: wePOSPlus - Point Of Sale (POS) for WooCommerce 1.3.0\n"
 "Report-Msgid-Bugs-To: https://wordpress.org/support/plugin/wepos-plus\n"
-"POT-Creation-Date: 2024-08-31 21:42:28+00:00\n"
+"POT-Creation-Date: 2024-09-03 14:00:36+00:00\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
@@ -213,14 +213,14 @@ msgstr ""
 
 #: assets/src/frontend/components/Home.vue:327
 #: assets/src/frontend/components/Home.vue:616
-#: assets/src/frontend/components/PrintReceiptHtml.vue:73
+#: assets/src/frontend/components/PrintReceiptHtml.vue:76
 #: languages/wepos.php:49
 msgid "Subtotal"
 msgstr ""
 
 #: assets/src/frontend/components/Home.vue:330
 #: assets/src/frontend/components/Home.vue:618
-#: assets/src/frontend/components/PrintReceiptHtml.vue:75
+#: assets/src/frontend/components/PrintReceiptHtml.vue:78
 #: languages/wepos.php:50
 msgid "Including Tax"
 msgstr ""
@@ -232,9 +232,9 @@ msgstr ""
 #: assets/src/frontend/components/Home.vue:626
 #: assets/src/frontend/components/Home.vue:631
 #: assets/src/frontend/components/Home.vue:648
-#: assets/src/frontend/components/Home.vue:1255
-#: assets/src/frontend/components/PrintReceiptHtml.vue:81
-#: assets/src/frontend/components/PrintReceiptHtml.vue:85
+#: assets/src/frontend/components/Home.vue:1257
+#: assets/src/frontend/components/PrintReceiptHtml.vue:84
+#: assets/src/frontend/components/PrintReceiptHtml.vue:88
 #: languages/wepos.php:51
 msgid "Discount"
 msgstr ""
@@ -269,21 +269,21 @@ msgstr ""
 #: assets/src/frontend/components/Home.vue:446
 #: assets/src/frontend/components/Home.vue:637
 #: assets/src/frontend/components/Home.vue:654
-#: assets/src/frontend/components/Home.vue:1277
-#: assets/src/frontend/components/PrintReceiptHtml.vue:89
+#: assets/src/frontend/components/Home.vue:1279
+#: assets/src/frontend/components/PrintReceiptHtml.vue:92
 #: languages/wepos.php:57
 msgid "Fee"
 msgstr ""
 
 #: assets/src/frontend/components/Home.vue:437
-#: assets/src/frontend/components/PrintReceiptHtml.vue:93
+#: assets/src/frontend/components/PrintReceiptHtml.vue:96
 #: languages/wepos.php:58
 msgid "Fee Tax"
 msgstr ""
 
 #: assets/src/frontend/components/Home.vue:437
 #: assets/src/frontend/components/Home.vue:662
-#: assets/src/frontend/components/PrintReceiptHtml.vue:93
+#: assets/src/frontend/components/PrintReceiptHtml.vue:96
 #: languages/wepos.php:59
 msgid "Tax"
 msgstr ""
@@ -371,13 +371,13 @@ msgid "Sale Summary"
 msgstr ""
 
 #: assets/src/frontend/components/Home.vue:582
-#: assets/src/frontend/components/PrintReceiptHtml.vue:46
+#: assets/src/frontend/components/PrintReceiptHtml.vue:49
 #: languages/wepos.php:80
 msgid "Expiry :"
 msgstr ""
 
 #: assets/src/frontend/components/Home.vue:666
-#: assets/src/frontend/components/PrintReceiptHtml.vue:97
+#: assets/src/frontend/components/PrintReceiptHtml.vue:100
 #: languages/wepos.php:81
 msgid "Order Total"
 msgstr ""
@@ -408,61 +408,61 @@ msgstr ""
 msgid "Back to Sale"
 msgstr ""
 
-#: assets/src/frontend/components/Home.vue:937
-#: assets/src/frontend/components/Home.vue:1464
-#: assets/src/frontend/components/Home.vue:1492 languages/wepos.php:88
+#: assets/src/frontend/components/Home.vue:938
+#: assets/src/frontend/components/Home.vue:1466
+#: assets/src/frontend/components/Home.vue:1494 languages/wepos.php:88
 msgid "All categories"
 msgstr ""
 
-#: assets/src/frontend/components/Home.vue:1376 languages/wepos.php:89
+#: assets/src/frontend/components/Home.vue:1378 languages/wepos.php:89
 msgid "This product is out of stock."
 msgstr ""
 
-#: assets/src/frontend/components/Home.vue:1393 languages/wepos.php:90
+#: assets/src/frontend/components/Home.vue:1395 languages/wepos.php:90
 msgid "Product is out of stock!"
 msgstr ""
 
-#: assets/src/frontend/components/PrintReceiptHtml.vue:15
+#: assets/src/frontend/components/PrintReceiptHtml.vue:18
 #: languages/wepos.php:91
 msgid "NIF: "
 msgstr ""
 
-#: assets/src/frontend/components/PrintReceiptHtml.vue:24
+#: assets/src/frontend/components/PrintReceiptHtml.vue:27
 #: languages/wepos.php:92
 msgid "Order ID"
 msgstr ""
 
-#: assets/src/frontend/components/PrintReceiptHtml.vue:25
+#: assets/src/frontend/components/PrintReceiptHtml.vue:28
 #: languages/wepos.php:93
 msgid "Order Date"
 msgstr ""
 
-#: assets/src/frontend/components/PrintReceiptHtml.vue:34
+#: assets/src/frontend/components/PrintReceiptHtml.vue:37
 #: languages/wepos.php:94
 msgid "Tax includes"
 msgstr ""
 
-#: assets/src/frontend/components/PrintReceiptHtml.vue:104
+#: assets/src/frontend/components/PrintReceiptHtml.vue:107
 #: languages/wepos.php:95
 msgid "Payment method"
 msgstr ""
 
-#: assets/src/frontend/components/PrintReceiptHtml.vue:109
+#: assets/src/frontend/components/PrintReceiptHtml.vue:112
 #: languages/wepos.php:96
 msgid "Payment Type"
 msgstr ""
 
-#: assets/src/frontend/components/PrintReceiptHtml.vue:114
+#: assets/src/frontend/components/PrintReceiptHtml.vue:117
 #: languages/wepos.php:97
 msgid "Cash Given"
 msgstr ""
 
-#: assets/src/frontend/components/PrintReceiptHtml.vue:119
-#: includes/PartialPayment.php:220 languages/wepos.php:98
+#: assets/src/frontend/components/PrintReceiptHtml.vue:122
+#: includes/PartialPayment.php:223 languages/wepos.php:98
 msgid "Due Amount"
 msgstr ""
 
-#: assets/src/frontend/components/PrintReceiptHtml.vue:123
+#: assets/src/frontend/components/PrintReceiptHtml.vue:126
 #: languages/wepos.php:99
 msgid "Change Money"
 msgstr ""
@@ -629,45 +629,45 @@ msgstr ""
 msgid "Cash tendered amount: %1$s, Change amount: %2$s"
 msgstr ""
 
-#: includes/PartialPayment.php:104 includes/functions.php:198
+#: includes/PartialPayment.php:106 includes/functions.php:198
 msgid "ID"
 msgstr ""
 
-#: includes/PartialPayment.php:105
+#: includes/PartialPayment.php:107
 msgid "Paid Amount"
 msgstr ""
 
-#: includes/PartialPayment.php:106
+#: includes/PartialPayment.php:108
 msgid "Total Due"
 msgstr ""
 
-#: includes/PartialPayment.php:107
+#: includes/PartialPayment.php:109
 msgid "Created Date"
 msgstr ""
 
-#: includes/PartialPayment.php:108
+#: includes/PartialPayment.php:110
 msgid "Receipt"
 msgstr ""
 
-#: includes/PartialPayment.php:130
+#: includes/PartialPayment.php:132
 msgid "No partial payment records found."
 msgstr ""
 
-#: includes/PartialPayment.php:194
+#: includes/PartialPayment.php:197
 msgid "Processing"
 msgstr ""
 
-#: includes/PartialPayment.php:200
+#: includes/PartialPayment.php:203
 msgid "Complete"
 msgstr ""
 
-#: includes/PartialPayment.php:269
+#: includes/PartialPayment.php:272
 msgid "Partially Paid <span class=\"count\">(%s)</span>"
 msgid_plural "Partially Paid <span class=\"count\">(%s)</span>"
 msgstr[0] ""
 msgstr[1] ""
 
-#: includes/PartialPayment.php:351
+#: includes/PartialPayment.php:354
 msgid "%s order status changed to Partial Payment."
 msgid_plural "%s order statuses changed to Partial Payment."
 msgstr[0] ""
@@ -822,7 +822,7 @@ msgstr ""
 msgid "weDevs + saidur"
 msgstr ""
 
-#: includes/PartialPayment.php:264 includes/PartialPayment.php:284
+#: includes/PartialPayment.php:267 includes/PartialPayment.php:287
 msgctxt "Order status"
 msgid "Partially Paid"
 msgstr ""

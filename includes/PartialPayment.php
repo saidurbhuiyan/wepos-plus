@@ -93,6 +93,8 @@ class PartialPayment
         wp_localize_script('partial-payment-stats', 'partialPaymentData', array(
             'settings' => get_wepos_settings(),
             'orderId' => $order_id,
+            'partialPaymentStats' => $partial_payment_stats,
+            'dateFormat' => get_option('date_format'),
         ));
 
 		?>
@@ -121,7 +123,7 @@ class PartialPayment
 								<?php echo esc_html(date_i18n(get_option('date_format') ?? 'Y-m-d', strtotime($stat->date_created))); ?>
                             </td>
                             <td class="column-receipt" style="text-align: center;">
-                                <a class="partial-receipt" href="#" data-date-partial-paid="<?php echo date_i18n(get_option('date_format') ?? 'Y-m-d', strtotime($stat->date_created)); ?>" data-partial-paid="<?php echo $total_paid; ?>" data-partial-paid-amount="<?php echo $stat->paid; ?>" data-partial-due="<?php echo $due > 0 ? $due : 0; ?>"><span class="dashicons dashicons-media-document"></span></a></td>
+                                <a class="partial-receipt" href="#" data-date-partial-paid="<?php echo date_i18n(get_option('date_format') ?? 'Y-m-d', strtotime($stat->date_created)); ?>" data-partial-paid="<?php echo $total_paid; ?>" data-partial-paid-amount="<?php echo $stat->paid; ?>" data-partial-due="<?php echo $due > 0 ? $due : 0; ?>" data-partial-payment-id="<?php echo $stat->ID; ?>"><span class="dashicons dashicons-media-document"></span></a></td>
                         </tr>
 						<?php $total_paid -= $stat->paid; ?>
 					<?php endforeach; ?>
@@ -149,14 +151,15 @@ class PartialPayment
 		$order = wc_get_order($orderData);
 		$paid = get_total_paid($order->get_id());
 
-		$due = $order->get_total() - $paid;
+
+		$due = $order->get_meta('_wepos_cash_payment_type') === 'partial' ? $order->get_total() - $paid : 0;
 
 		$html = '<tfoot>';
 		if ($due > 0) {
 			$html .= '<tr><th class="label" scope="row">Due:</th>' . (is_int($orderData) ? '<td width="1%"></td>' : '') . '<td class="total">' . wc_price($due) . '</td></tr>';
 		}
 
-		if ($paid) {
+		if ($paid && $order->get_meta('_wepos_cash_payment_type') === 'partial') {
 			$html .= '<tr><th class="label" scope="row">Paid:</th>' . (is_int($orderData) ? '<td width="1%"></td>' : '') . '<td class="total">' . wc_price($paid) . '</td></tr>';
 		}
 
@@ -168,8 +171,8 @@ class PartialPayment
 	 * Append partial order post status
 	 * @param $statuses
 	 *
-	 * @return mixed
-	 */
+	 * @return string[]
+     */
 	public function append_partial_order_post_status($statuses)
 	{
 		if (!is_array($statuses)) {
@@ -236,7 +239,7 @@ class PartialPayment
 		if ('order_due_amount' === $column_name) {
 			$order = wc_get_order($post_id);
 			$paid = get_total_paid($order->get_id());
-			$due = $order->get_total() - $paid;
+			$due = $order->get_meta('_wepos_cash_payment_type') === 'partial' ? $order->get_total() - $paid : 0;
 
 			$currency = is_callable([$order, 'get_currency']) ? $order->get_currency() : $order->order_currency;
 

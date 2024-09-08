@@ -879,7 +879,8 @@ export default {
       }
     },
     changeAmount() {
-      var returnMoney = this.unFormat(this.cashAmount) - this.$store.getters['Cart/getTotal'];
+      let returnMoney = this.unFormat(this.cashAmount) - this.$store.getters['Cart/getTotal'];
+      returnMoney = parseFloat(returnMoney.toFixed(2));
       return returnMoney > 0 ? returnMoney : 0;
     },
     getBreadCrums() {
@@ -1045,11 +1046,11 @@ export default {
               },
               {
                 key: '_wepos_cash_tendered_amount',
-                value: self.cashAmount.toString()
+                value: this.unFormat(self.cashAmount).toString()
               },
               {
                 key: '_wepos_cash_paid_amount',
-                value: self.cashAmount.toString()
+                value: this.unFormat( self.cashAmount).toString()
               },
               {
                 key: '_wepos_cash_payment_type',
@@ -1111,7 +1112,8 @@ export default {
                       },
                       order_id: response.number,
                       order_date: response.date_created,
-                      cashamount: this.cashAmount.toString(),
+                      customer_id: response.customer_id,
+                      cashamount: this.unFormat( this.cashAmount).toString(),
                       changeamount: this.changeAmount.toString(),
                       /* partial payment */
                       dueamount: this.dueAmountPartial.toString(),
@@ -1187,7 +1189,7 @@ export default {
           .filter(coupon => typeof coupon.product_ids !== 'undefined' && coupon.product_ids.includes(productId))
           .map(coupon => coupon.total);
 
-      return discount && discount.length > 0 ? discount[0] : '0.00';
+      return discount && discount.length > 0 ? parseFloat(discount[0]).toFixed(2) : '0.00';
     },
 
     removeProductDiscount(e, productId) {

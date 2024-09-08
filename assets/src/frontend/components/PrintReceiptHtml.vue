@@ -2,6 +2,9 @@
     <div class="wepos-checkout-print-wrapper" v-if="settings.wepos_receipts">
         <div class="header">
           <div v-if="printdata.billing">
+            <p v-if="printdata.customer_id">
+              Customer ID: #{{printdata.customer_id }}
+            </p>
             <p v-if="printdata.billing.first_name || printdata.billing.last_name">
               {{printdata.billing.first_name + ' ' + printdata.billing.last_name }}
             </p>
@@ -156,7 +159,6 @@ export default {
         },
 
       hasFixedProductDiscount() {
-
         if (!this.printdata.coupon_lines) {
           return false;
         }
@@ -182,7 +184,7 @@ export default {
             .filter(coupon => typeof coupon.product_ids !== 'undefined' && coupon.product_ids.includes(productId))
             .map(coupon => coupon.total);
 
-        return discount && discount.length > 0 ? discount[0] : '0.00';
+        return discount && discount.length > 0 ? parseFloat(discount[0]).toFixed(2) : '0.00';
       },
     }
 };
