@@ -66,6 +66,10 @@ class ExpiryStockManager
      * @return void
      */
     public function add_expiry_to_order_items($itemId, $item) {
+        if (!method_exists($item, 'get_product_id')){
+          return;
+        }
+
         $productId = $item->get_product_id();
         $order = wc_get_order($item->get_order_id());
 
