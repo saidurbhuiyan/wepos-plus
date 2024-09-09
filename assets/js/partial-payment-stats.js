@@ -8,47 +8,46 @@ async function generateReceiptPDF(printdata, settings) {
     });
 
     let yPosition = 20;
-    // Add Header
-    if (settings.wepos_receipts && settings.wepos_receipts.receipt_header) {
-        const tempDiv = document.createElement('div');
-        tempDiv.innerHTML = settings.wepos_receipts.receipt_header.trim();
-        document.body.appendChild(tempDiv);
+    doc.setFontSize(8);
+    doc.setFont("Helvetica", "normal");
 
-        yPosition = (tempDiv.getElementsByTagName('p').length * 5) + 10;
+    // Add customer Header
+    let bPosition = yPosition;
+    if (printdata.billing){
+        const billingFields = [
+            { condition: printdata.customer_id, text: 'Customer ID: #' + printdata.customer_id },
+            { condition: printdata.billing.first_name || printdata.billing.last_name, text: (printdata.billing.first_name || '') + ' ' + (printdata.billing.last_name || '') },
+            { condition: printdata.billing.email, text: printdata.billing.email },
+            { condition: printdata.billing.phone, text: 'Phone: ' + printdata.billing.phone },
+            { condition: printdata.billing.nif, text: 'NIF: ' + printdata.billing.nif },
+            { condition: printdata.billing.address_1, text: printdata.billing.address_1 }
+        ];
 
-        await doc.html( tempDiv, {
-            callback: function (pdf) {
-                document.body.removeChild(tempDiv); // Clean up
-                return pdf;
-            },
-            x: 160,  // X position (margin)
-            y: 10,  // Y position (margin)
-            html2canvas: {
-                scale: 0.28  // Adjust scale if needed
+        // Iterate over each field and print if it exists
+        billingFields.forEach(field => {
+            if (field.condition) {
+                doc.text(field.text, 11, yPosition);
+                yPosition += 5;
             }
         });
     }
+    // Add company Header
+    if (settings.wepos_receipts && settings.wepos_receipts.receipt_header) {
+        const tempDiv = document.createElement('div');
+        tempDiv.innerHTML = settings.wepos_receipts.receipt_header.trim();
+        const companyInfo = Array.from(tempDiv.querySelectorAll('p')).map(p => p.textContent.trim())
 
-    doc.setFontSize(10);
-    let bPosition = yPosition;
-    if (printdata.billing){
-        doc.setFont("Helvetica", "normal");
-        (printdata.customer_id) && doc.text('Customer ID: #'+printdata.customer_id, 11, bPosition);
-        bPosition += 5;
-        (printdata.billing.first_name || printdata.billing.last_name) && doc.text(printdata.billing.first_name + ' ' + printdata.billing.last_name, 11, bPosition);
-        bPosition += 5
-        printdata.billing.email && doc.text(printdata.billing.email, 11, bPosition);
-        bPosition += 5
-        printdata.billing.phone && doc.text('Phone: ' + printdata.billing.phone, 11, bPosition);
-        bPosition += 5
-        printdata.billing.nif && doc.text('NIF: ' + printdata.billing.nif, 11, bPosition);
-        bPosition += 5
-        printdata.billing.address_1 && doc.text(printdata.billing.address_1, 11, bPosition);
+        if (companyInfo.length > 0) {
+            companyInfo.forEach(info => {
+                doc.text(info, 160, bPosition);
+                bPosition += 5
+            })
+        }
     }
 
     // Add Order Info
 
-    yPosition = yPosition < bPosition ? bPosition + 10 : yPosition + 20;
+    yPosition = (yPosition < bPosition ? bPosition : yPosition) + 10;
     doc.text(`Order ID: #${printdata.id}`, 11, yPosition);
     doc.text(`Order Date: ${new Date(printdata.date_created).toLocaleString()}`, 198, yPosition, {align: 'right'});
 
@@ -65,7 +64,7 @@ async function generateReceiptPDF(printdata, settings) {
     doc.text('Quantity', 100, yPosition, {align: 'center'});
     doc.text('Price', 198, yPosition, {align: 'right'});
     yPosition += 10;
-
+    const expiryData = printdata.meta_data?.find(item => item.key === '_wepos_product_expiry_data')?.value;
     printdata.line_items.forEach(item => {
         doc.setFont("Helvetica", "bold");
         doc.text(item.name, 11, yPosition);
@@ -76,11 +75,40 @@ async function generateReceiptPDF(printdata, settings) {
 
         // Add attributes
         if (item.meta_data && item.meta_data.length > 0) {
+            yPosition += 2;
+            doc.setFontSize(7);
+            let previousWidth = 12;
             item.meta_data.forEach(attribute_item => {
-                yPosition += 5;
-                doc.setFontSize(9);
-                doc.text(`${attribute_item.display_key}: ${attribute_item.display_value}`, 12, yPosition);
+                if(attribute_item.key.startsWith("pa_")){
+                    // Set color for the display key
+                    doc.setTextColor(117, 133, 152); // Gray color
+                    doc.text(`${attribute_item.display_key}: `, previousWidth, yPosition, { baseline: 'top' });
+
+                    // Get the width of the display key to set position for the value
+                    const keyWidth = doc.getTextWidth(`${attribute_item.display_key}: `);
+
+                    // Set color for the display value
+                    doc.setTextColor(0, 0, 0); // Black color
+                    doc.text(`${attribute_item.display_value}`, previousWidth + keyWidth, yPosition, { baseline: 'top' });
+                    const valueWidth = doc.getTextWidth(`${attribute_item.display_value}: `);
+                    previousWidth = previousWidth + keyWidth + valueWidth;
+                }
             });
+        }
+
+        // Add Expiry
+        const expiry = expiryData?.find(data => parseInt(data?.product_id) === parseInt(item?.product_id))?.expiry;
+        if (expiry) {
+            yPosition += 7;
+            doc.setTextColor(117, 133, 152);
+            doc.text(`Expiry: `, 12, yPosition);
+            doc.setTextColor(0, 0, 0);
+            expiry.forEach(data => {
+                yPosition += 5;
+                doc.text(`${data.quantity}x ${data.date}`, 14, yPosition);
+            });
+
+
         }
 
         const itemTotal = parseFloat(item.total);
@@ -88,8 +116,10 @@ async function generateReceiptPDF(printdata, settings) {
         const discount = itemSubtotal - itemTotal;
         if (discount > 0) {
             yPosition += 5;
+            doc.setTextColor(117, 133, 152);
             doc.text(`Discount: -${formatPrice(discount.toFixed(2))}`, 12, yPosition);
         }
+        doc.setTextColor(0, 0, 0);
         yPosition += 10;
     });
 
@@ -98,7 +128,7 @@ async function generateReceiptPDF(printdata, settings) {
     const discount = parseFloat(printdata.discount_total)
     const subtotal = total + discount
     doc.setFont("Helvetica", "bold");
-    doc.setFontSize(10);
+    doc.setFontSize(8);
     yPosition += 5;
     doc.text(`Subtotal:`, 11, yPosition);
     doc.text(formatPrice(subtotal.toFixed(2)), 198, yPosition, {align: 'right'});

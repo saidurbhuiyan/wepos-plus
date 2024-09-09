@@ -46,7 +46,7 @@
                             <ul>
                               <li style="display: block;">
                           <span class="attr_name">{{
-                              __('Expiry :', 'wepos')
+                              __('Expiry:', 'wepos')
                             }}</span>
                               </li>
                               <li style="display: block;" v-for="expiry in item.expiry">
