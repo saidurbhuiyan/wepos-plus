@@ -63,6 +63,9 @@
                 <div class="img">
                   <img :src="getProductImage(product)" :alt="getProductImageName( product )">
                 </div>
+                <div v-if="productView === 'grid'" class="stock-status">
+                  <span v-html="getProductStockStatus(product)"></span>
+                </div>
                 <div class="title" v-if="productView === 'grid'">
                   {{ truncateTitle(product.name, 20) }}
                 </div>
@@ -78,6 +81,10 @@
                       <span class="label">{{ __('Price :', 'wepos') }}</span>
                       <span class="value" v-html="product.price_html"></span>
                     </li>
+                    <li>
+                      <span class="label">{{ __('Stock :', 'wepos') }}</span>
+                      <span class="value" v-html="getProductStockStatus(product)"></span>
+                    </li>
                   </ul>
                 </div>
                 <span class="add-product-icon flaticon-add" :class="productView"></span>
@@ -90,6 +97,9 @@
                   <div class="img">
                     <img :src="getProductImage(product)" :alt="getProductImageName( product )">
                   </div>
+                  <div v-if="productView === 'grid'" class="stock-status">
+                    <span v-html="getProductStockStatus(product)"></span>
+                  </div>
                   <div class="title" v-if="productView === 'grid'">
                     {{ truncateTitle(product.name, 20) }}
                   </div>
@@ -99,6 +109,10 @@
                       <li>
                         <span class="label">{{ __('Price :', 'wepos') }}</span>
                         <span class="value" v-html="product.price_html"></span>
+                      </li>
+                      <li>
+                        <span class="label">{{ __('Stock :', 'wepos') }}</span>
+                        <span class="value" v-html="getProductStockStatus(product)"></span>
                       </li>
                     </ul>
 
@@ -1192,6 +1206,19 @@ export default {
       return discount && discount.length > 0 ? parseFloat(discount[0]).toFixed(2) : '0.00';
     },
 
+    getProductStockStatus(product) {
+      const stockName = product.stock_status === 'outofstock'
+          ? 'Out of Stock'
+          : product.stock_status === 'onbackorder'
+              ? 'On Backorder'
+              : product.stock_status === 'instock' ?
+                  'In Stock' : product.stock_status;
+
+      const quantity =  product.manage_stock && product.stock_status === 'instock' ? `(${product.stock_quantity})` : '';
+      return `<mark class="${product.stock_status}">${stockName}</mark> ${quantity}`;
+
+    },
+
     removeProductDiscount(e, productId) {
       e.preventDefault();
       const key = this.cartdata.coupon_lines.findIndex(coupon => coupon.product_ids?.includes(productId));
@@ -1397,7 +1424,8 @@ export default {
         });
         return;
       }
-      product.stock_expiry = product.meta_data.some((meta) => meta.key === '_expiry_rule' && meta.value === 'yes') ? product.meta_data.find((meta) => meta.key === '_expiry_data').value : null;
+
+      product.stock_expiry = product.meta_data.some((meta) => meta.key === '_expiry_rule' && meta.value === 'yes') ? product.meta_data.find((meta) => meta.key === '_expiry_data')?.value : null;
       this.$store.dispatch('Cart/addToCartAction', product);
     },
     toggleEditQuantity(product, key) {
@@ -1914,6 +1942,35 @@ export default {
               -webkit-appearance: none
             }
 
+            .stock-status {
+              position: absolute;
+              top: 0;
+              right: 0;
+              background: #F6F7FB;
+              padding: 1px 2px;
+              color: #999DAC;
+              font-size: 11px;
+              border-bottom-left-radius: 3px;
+              border: 1px solid #E9EDF0;
+
+              mark {
+                font-weight: 700;
+                background: transparent none;
+                line-height: 1;
+
+                &.instock{
+                  color: #7ad03a;
+                }
+                &.outofstock{
+                  color: #a44;
+                }
+                &.onbackorder{
+                  color: #eaa600;
+                }
+
+              }
+            }
+
             img {
               width: 100%;
             }
@@ -2022,6 +2079,22 @@ export default {
                     del {
                       color: #9095a5;
                       margin-right: 3px;
+                    }
+                      mark {
+                        font-weight: 700;
+                        background: transparent none;
+                        line-height: 1;
+
+                        &.instock{
+                          color: #7ad03a;
+                        }
+                        &.outofstock{
+                          color: #a44;
+                        }
+                        &.onbackorder{
+                          color: #eaa600;
+                        }
+
                     }
                   }
 
