@@ -21,7 +21,9 @@
               {{printdata.billing.address_1 }}
             </p>
           </div>
-          <div v-html="settings.wepos_receipts.receipt_header"></div>
+          <div class="company-info">
+            <p v-for="company in receiptInfo(settings.wepos_receipts.receipt_header)">{{ company }}</p>
+          </div>
         </div>
         <div class="order-info">
             <span class="wepos-left"><strong>{{ __( 'Order ID', 'wepos' ) }}: #{{ printdata.order_id }}</strong></span>
@@ -130,7 +132,24 @@
                 </tbody>
             </table>
         </div>
-        <div class="footer" v-html="settings.wepos_receipts.receipt_footer"></div>
+
+      <div class="sign-by-wrapper">
+        <div class="sign-by">
+        <div>
+          {{ __( 'Prepared by', 'wepos' ) }}
+        </div>
+        <div>
+          {{ __( 'Delivered by', 'wepos' ) }}
+        </div>
+        <div>
+          {{ __( 'Reviewed by', 'wepos' ) }}
+        </div>
+        </div>
+      </div>
+
+      <div class="footer">
+            <p v-for="company in receiptInfo(settings.wepos_receipts.receipt_footer)">{{ company }}</p>
+        </div>
     </div>
 </template>
 <script>
@@ -186,6 +205,12 @@ export default {
 
         return discount && discount.length > 0 ? parseFloat(discount[0]).toFixed(2) : '0.00';
       },
+
+      receiptInfo(settingReceipt){
+        const tempDiv = document.createElement('div');
+        tempDiv.innerHTML = settingReceipt.trim();
+        return Array.from(tempDiv.querySelectorAll('p')).map(p => p.textContent.trim())
+      }
     }
 };
 
@@ -229,6 +254,11 @@ export default {
             display: flex;
             justify-content: space-between;
             align-items: end;
+
+          .company-info {
+            display: block;
+            align-items: end;
+          }
         }
 
         .footer{
@@ -236,7 +266,36 @@ export default {
             text-align: center;
         }
 
-        .order-info {
+      .sign-by-wrapper {
+        padding: 50px 25px;
+        width: 100%;
+        box-sizing: border-box;
+
+        .sign-by {
+          display: flex;
+          justify-content: space-between;
+          width: 100%;
+
+          div {
+            display: inline-block;
+            position: relative;
+            padding-bottom: 3px;
+            text-align: center;
+
+            &:before {
+              content: "";
+              position: absolute;
+              left: 0;
+              right: 0;
+              top: -2px;
+              border-top: 1px solid #000000;
+            }
+          }
+        }
+      }
+
+
+      .order-info {
             margin: 10px 0px 10px;
             border-bottom: 1px dashed #b7b7b7;
             padding: 10px 5px;
