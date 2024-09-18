@@ -324,32 +324,22 @@ class CustomManager {
 	 *
 	 * @return array
 	 */
-	public function search_customers_by_search_by_data($args, $request) {
+    public function search_customers_by_search_by_data($args, $request) {
+        if (!empty($request['search']) && !empty($request['search_by'])) {
 
-		if (isset($request['search'], $request['search_by'])) {
-			$search_term = sanitize_text_field($request['search']);
+            $search_term = sanitize_text_field($request['search']);
             $search_by = sanitize_text_field($request['search_by']);
 
-			// Search by NIF
-			if ($search_term && $search_by === 'nif') {
-                    // Search by NIF
-                $args['meta_query'] = $args['meta_query'] ?? [];
-				$args['meta_query'][]   = array(
-                        'key'     => 'billing_nif',
-                        'value'   => $search_term,
-                        'compare' => 'LIKE',
-                    );
+            $meta_key = $search_by === 'nif' ? 'billing_nif' :  null;
+            $meta_key =  $search_by === 'address' ? 'billing_address_1' : $meta_key;
 
-				// Ensure 'search' is not conflicting
-				unset($args['search']);
-			} else {
-				// If the search by is default
-				$args['search'] = '*' . $search_term . '*';
-			}
-		}
-
-		return $args;
-	}
+            if ($meta_key) {
+                $args['meta_query'][] = ['key' => $meta_key, 'value' => $search_term, 'compare' => 'LIKE'];
+                unset($args['search']);
+            }
+        }
+        return $args;
+    }
 
 
 

@@ -1,45 +1,4 @@
-jQuery(document).ready(function($) {
-
-    // Function to add expiry date and quantity fields
-    function addExpiryField(index) {
-        const buttonField = index > 0 ? '<button type="button" class="remove-expiry-field button">&times;</button>' : '<span style="padding: 0 14px;"></span>'
-        return`<p class="form-field expiry-field-group">
-                <input type="date" class="short" name="expiry_dates[]" id="expiry_dates_${index}" value="">
-                <input type="number" class="short" min="1" name="expiry_quantities[]" id="expiry_quantities_${index}" value="1">
-                ${buttonField}
-            </p>`;
-    }
-    const expiryFieldsContainer = $('#expiry_date_fields');
-    const expiryInput = $('#expiry_input');
-    // Show or hide expiry fields based on the expiry rule selection
-    $('#_expiry_rule').change(function() {
-        const rule = $(this).val();
-
-        if (rule === 'yes') {
-            // Add initial field if none exists
-            if (expiryInput.find('.expiry-field-group').length === 0) {
-                expiryInput.append(addExpiryField(0));
-            }
-            // Show the fields container
-            expiryFieldsContainer.show();
-        } else {
-            // Hide and remove all fields
-            expiryInput.empty();
-            expiryFieldsContainer.hide();
-        }
-    }).trigger('change');
-
-    // Add new expiry field
-    expiryFieldsContainer.on('click', '.add-expiry-field', function() {
-        const index = expiryInput.find('.expiry-field-group').length;
-        expiryInput.append(addExpiryField(index));
-    });
-
-    // Remove expiry field
-    expiryFieldsContainer.on('click', '.remove-expiry-field', function() {
-        if (expiryInput.find('.expiry-field-group').length <= 1) {
-            return;
-        }
-        $(this).closest('.expiry-field-group').remove();
-    });
-});
+(()=>{var __webpack_modules__={"./assets/src/utils/expiryStockManager.js":
+/*!************************************************!*\
+  !*** ./assets/src/utils/expiryStockManager.js ***!
+  \************************************************/()=>{eval("jQuery(document).ready(function ($) {\n  // Function to add expiry date and quantity fields\n  function addExpiryField(index) {\n    const buttonField = index > 0 ? '<button type=\"button\" class=\"remove-expiry-field button\">&times;</button>' : '<span style=\"padding: 0 14px;\"></span>';\n    return `<p class=\"form-field expiry-field-group\">\n                <input type=\"date\" class=\"short\" name=\"expiry_dates[]\" id=\"expiry_dates_${index}\" value=\"\">\n                <input type=\"number\" class=\"short\" min=\"1\" name=\"expiry_quantities[]\" id=\"expiry_quantities_${index}\" value=\"1\">\n                ${buttonField}\n            </p>`;\n  }\n  const expiryFieldsContainer = $('#expiry_date_fields');\n  const expiryInput = $('#expiry_input');\n  // Show or hide expiry fields based on the expiry rule selection\n  $('#_expiry_rule').change(function () {\n    const rule = $(this).val();\n    if (rule === 'yes') {\n      // Add initial field if none exists\n      if (expiryInput.find('.expiry-field-group').length === 0) {\n        expiryInput.append(addExpiryField(0));\n      }\n      // Show the fields container\n      expiryFieldsContainer.show();\n    } else {\n      // Hide and remove all fields\n      expiryInput.empty();\n      expiryFieldsContainer.hide();\n    }\n  }).trigger('change');\n\n  // Add new expiry field\n  expiryFieldsContainer.on('click', '.add-expiry-field', function () {\n    const index = expiryInput.find('.expiry-field-group').length;\n    expiryInput.append(addExpiryField(index));\n  });\n\n  // Remove expiry field\n  expiryFieldsContainer.on('click', '.remove-expiry-field', function () {\n    if (expiryInput.find('.expiry-field-group').length <= 1) {\n      return;\n    }\n    $(this).closest('.expiry-field-group').remove();\n  });\n});\n\n//# sourceURL=webpack://wepos/./assets/src/utils/expiryStockManager.js?")}},__webpack_exports__={};__webpack_modules__["./assets/src/utils/expiryStockManager.js"]()})();

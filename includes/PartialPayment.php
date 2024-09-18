@@ -414,8 +414,8 @@ class PartialPayment
 		// Enqueue your script
         wp_enqueue_script('html2canvas', plugins_url('../assets/js/html2canvas.min.js', __FILE__), array(), '1.4.1', true);
         wp_enqueue_script('jspdf', plugins_url('../assets/js/jspdf.umd.min.js', __FILE__), array(), '2.5.1', true);
-		wp_enqueue_script('wepos-partial-payment-script', plugins_url('../assets/js/partial-payment.js', __FILE__), array('jquery'), null, true);
-        wp_enqueue_script('partial-payment-stats', plugins_url('../assets/js/partial-payment-stats.js', __FILE__), array('jquery', 'html2canvas', 'jspdf'), '1.0', true);
+		wp_enqueue_script('wepos-partial-payment-script', plugins_url('../assets/js/partialPayment' . (VUE_BUILD_MODE ? '' : '.min') . '.js', __FILE__), array('jquery'), null, true);
+        wp_enqueue_script('partial-payment-stats', plugins_url('../assets/js/partialPaymentStatsReceipt' . (VUE_BUILD_MODE ? '' : '.min') . '.js', __FILE__), array('jquery', 'html2canvas', 'jspdf'), '1.0', true);
 
         wp_localize_script('partial-payment-stats', 'weposData', array(
             'orderUrl' => esc_url_raw(rest_url('wc/v3/orders')),

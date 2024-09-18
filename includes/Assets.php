@@ -6,6 +6,9 @@ namespace WeDevs\WePOS;
  */
 class Assets {
 
+    /**
+     * @throws \JsonException
+     */
     function __construct() {
 
         if ( is_admin() ) {
@@ -13,6 +16,7 @@ class Assets {
         } else {
             add_action( 'wepos_enqueue_scripts', [ $this, 'register' ], 5 );
         }
+
     }
 
     /**
@@ -67,7 +71,7 @@ class Assets {
     public function get_scripts() {
         global $wp_version;
 
-        $prefix = defined( 'SCRIPT_DEBUG' ) && SCRIPT_DEBUG ? '' : '.min';
+        $prefix = defined( 'VUE_BUILD_MODE' ) && VUE_BUILD_MODE ? '' : '.min';
         $dependency = [ 'jquery', 'wepos-i18n-jed' ];
 
         if ( version_compare( $wp_version, '5.0', '<' ) ) {
@@ -144,7 +148,7 @@ class Assets {
      * @return array
      */
     public function get_styles() {
-        $prefix = defined( 'SCRIPT_DEBUG' ) && SCRIPT_DEBUG ? '' : '.min';
+        $prefix = defined( 'VUE_BUILD_MODE' ) && VUE_BUILD_MODE ? '' : '.min';
 
         $styles = [
             'wepos-flaticon' => [

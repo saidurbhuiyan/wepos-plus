@@ -28,32 +28,41 @@
             <option value disabled>Search By</option>
             <option value="default" selected>Default</option>
             <option value="nif">NIF</option>
+            <option value="address">Address</option>
           </select>
-            <input type="text" ref="customerSearch" name="customer_search" id="customer-search" :placeholder="__( 'Search customer', 'wepos' )" v-model="serachInput" @focus.prevent="triggerFocus" @keyup="searchCustomer">
+            <input type="text" ref="customerSearch" name="customer_search" id="customer-search" :placeholder="__( 'Search customer', 'wepos' )" v-model="searchInput" @focus.prevent="triggerFocus" @keyup="searchCustomer">
             <span class="add-new-customer flaticon-add" @click.prevent="addNewCustomer()"></span>
             <div class="search-result" v-show="showCustomerResults">
-                <div v-if="customers.length">
-                    <keyboard-control :listLength="customers.length" @key-down="onKeyDown" @key-up="onKeyUp">
-                        <template slot-scope="{selectedIndex}">
-                            <li v-for="(customer, index) in customers" class="customer-search-item" :class="{'selected': index === selectedIndex}" :key="index">
-                                <a href="#" class="wepos-clearfix" @click="selectCustomer( customer )">
-                                    <span class="avatar wepos-left"><img :src="customer.avatar_url" :alt="customer.first_name + ' ' + customer.last_name"></span>
-                                    <span class="name wepos-left">{{ customer.first_name + ' ' + customer.last_name }}
-                                      <span class="metadata">{{ 'ID:' + customer.id }}</span>
-                                      <span class="metadata">{{ 'Email:' + customer.email }}</span>
-                                      <span v-if="customer.billing?.nif" class="metadata">{{ 'NIF:' + customer.billing?.nif }}</span>
-                                    </span>
-
-                                    <span class="action flaticon-enter-arrow wepos-right"></span>
-                                </a>
-                            </li>
-                        </template>
-                    </keyboard-control>
+              <div v-if="loading" class="no-data-found">
+                {{ __( 'Loading...', 'wepos' )  }}
+              </div>
+              <div v-else>
+                <div v-if="customers.length > 0">
+                  <keyboard-control :listLength="customers.length" @key-down="onKeyDown" @key-up="onKeyUp">
+                    <template slot-scope="{selectedIndex}">
+                      <li v-for="(searchCustomer, index) in customers" class="customer-search-item" :class="{'selected': index === selectedIndex}" :key="index">
+                        <a href="#" class="wepos-clearfix" @click="selectCustomer(searchCustomer)">
+                          <span class="avatar wepos-left">
+                          <img :src="searchCustomer.avatar_url || 'default-avatar.png'" :alt="searchCustomer.first_name + ' ' + searchCustomer.last_name">
+                        </span>
+                          <span class="name wepos-left">
+                          {{ searchCustomer.first_name + ' ' + searchCustomer.last_name }}
+                          <span class="metadata">{{ 'ID: ' + searchCustomer.id }}</span>
+                          <span class="metadata">{{ 'Email: ' + searchCustomer.email }}</span>
+                          <span v-if="searchCustomer.billing?.nif" class="metadata">{{ 'NIF: ' + (searchCustomer.billing?.nif || 'N/A') }}</span>
+                          <span v-if="searchCustomer.billing?.address_1" class="metadata">{{ 'Address: ' + (searchCustomer.billing?.address_1 || 'N/A') }}</span>
+                        </span>
+                          <span class="action flaticon-enter-arrow wepos-right"></span>
+                        </a>
+                      </li>
+                    </template>
+                  </keyboard-control>
                 </div>
                 <div v-else class="no-data-found">
-                    {{ __( 'No customer found', 'wepos' ) }}
+                  {{ __( 'No customer found', 'wepos' ) }}
                 </div>
-                <div class="suggession">
+              </div>
+              <div class="suggession">
                     <span class="term">
                         <span class="flaticon-swap"></span> {{ __( 'to navigate', 'wepos' ) }}
                     </span>
@@ -78,8 +87,7 @@
                 <div class="wepos-new-customer-form">
                     <form action="" class="wepos-form" autocomplete="off">
                         <div class="form-row col-2">
-                            <input type="text" :placeholder="__( 'First Name', 'wepos' )" v-model="customer.first_name">
-                            <input type="text" :placeholder="__( 'Last Name', 'wepos' )" v-model="customer.last_name">
+                            <input type="text" :placeholder="__( 'Full Name', 'wepos' )" v-model="customer.first_name">
                         </div>
                         <div class="form-row col-2">
                           <input type="email" :placeholder="__( 'Email', 'wepos' )" v-model="customer.email">
@@ -153,6 +161,7 @@ export default {
 
     data() {
         return {
+            loading: false,
             submitDisable: false,
             customers: [],
             customer: {
@@ -167,7 +176,7 @@ export default {
             created_customer: {},
             showNewCustomerCreatedModal: false,
             showCustomerResults: false,
-            serachInput: '',
+            searchInput: '',
             searchSelect: 'default',
             showNewCustomerModal: false,
             isDisabled: true
@@ -190,20 +199,16 @@ export default {
     watch: {
         customer: {
             handler(val) {
-                this.isDisabled = true;
-                if (
-                    val.first_name !== undefined && val.first_name.trim() != ''
-                    && val.last_name !== undefined && val.last_name.trim() != ''
-                    && val.email !== undefined && val.email.trim() != ''
-                ) {
-                    this.isDisabled = false;
-                }
+
+                this.isDisabled = !(val.first_name !== undefined && val.first_name.trim() !== ''
+                    // && val.last_name !== undefined && val.last_name.trim() != ''
+                    && val.email !== undefined && val.email.trim() !== '');
             },
             deep: true
         },
 
         'orderdata.customer_id'(newVal) {
-            this.serachInput = newVal ? this.orderdata.billing.first_name + ' ' + this.orderdata.billing.last_name : '';
+            this.searchInput = newVal ? this.orderdata.billing.first_name + ' ' + this.orderdata.billing.last_name : '';
         }
 
     },
@@ -215,7 +220,7 @@ export default {
         },
         searchClose() {
             this.showCustomerResults = false;
-            this.serachInput = '';
+            this.searchInput = '';
             this.searchSelect= 'default';
             this.showNewCustomerModal= false;
             this.$refs.customerSearch.blur();
@@ -255,19 +260,30 @@ export default {
        this.created_customer= {};
         this.showNewCustomerCreatedModal= false;
       },
+      searchLive(customer) {
+        console.log(customer);
+      },
         searchCustomer() {
-            if ( this.serachInput && this.searchSelect) {
-                wepos.api.get( wepos.rest.root + wepos.rest.posversion + '/customers?search=' + this.serachInput+'&search_by='+this.searchSelect )
-                .done(response => {
+          clearTimeout(this.debounceTimeout);
+          this.debounceTimeout = setTimeout(() => {
+            if (this.searchInput && this.searchSelect) {
+              this.loading = true;
+              wepos.api.get(wepos.rest.root + wepos.rest.posversion + '/customers?search=' + this.searchInput + '&search_by=' + this.searchSelect)
+                  .done(response => {
                     this.customers = response;
-                });
+                    this.loading = false;
+                  })
+                  .fail(() => {
+                    this.loading = false;
+                  });
             } else {
-                this.$emit( 'onCustomerSelected', {} );
+              this.$emit('onCustomerSelected', {});
             }
+          }, 300);
         },
         selectCustomer( customer ) {
             this.$emit( 'onCustomerSelected', customer );
-            this.serachInput = customer.first_name + ' ' + customer.last_name;
+            this.searchInput = customer.first_name + ' ' + customer.last_name;
             this.showCustomerResults = false;
         },
         createCustomer() {
@@ -292,7 +308,7 @@ export default {
 
                 wepos.api.post( wepos.rest.root + wepos.rest.posversion + '/customers', customerData )
                 .done(response => {
-                    this.serachInput = response.first_name + ' ' + response.last_name;
+                    this.searchInput = response.first_name + ' ' + response.last_name;
                     this.$emit( 'onCustomerSelected', response );
 
                     $contentWrap.unblock();
@@ -319,13 +335,13 @@ export default {
     },
     created() {
         this.eventBus.$on( 'emptycart', ( orderdata ) => {
-            this.serachInput = '';
+            this.searchInput = '';
         } );
 
         var orderdata = JSON.parse( localStorage.getItem( 'orderdata' ) );
 
         if ( orderdata.customer_id != 'undefined' && orderdata.customer_id != 0 ) {
-            this.serachInput = orderdata.billing.first_name + ' ' + orderdata.billing.last_name;
+            this.searchInput = orderdata.billing.first_name + ' ' + orderdata.billing.last_name;
         }
     }
 };

@@ -17,6 +17,11 @@ var entryPoint = {
     bootstrap: './assets/src/utils/Bootstrap.js',
     wphook: './assets/vendors/wp-hook/index.js',
     style: './assets/less/style.less',
+    partialPaymentStatsReceipt: './assets/src/utils/partialPaymentStatsReceipt.js',
+    partialPayment: './assets/src/utils/partialPayment.js',
+    expiryStockManager: './assets/src/utils/expiryStockManager.js',
+
+
 };
 
 var exportPath = path.resolve(__dirname, './assets/js');

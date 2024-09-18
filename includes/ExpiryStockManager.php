@@ -173,7 +173,7 @@ class ExpiryStockManager
      * Enqueue JavaScript for Admin
      **/
     public function enqueue_admin_scripts() {
-        wp_enqueue_script('expiry-stock-manager', plugins_url('../assets/js/expiryStockManager.js', __FILE__), ['jquery'], '1.0', true);
+        wp_enqueue_script('expiry-stock-manager', plugins_url('../assets/js/expiryStockManager' . (VUE_BUILD_MODE ? '' : '.min') . '.js', __FILE__), ['jquery'], '1.0', true);
         wp_enqueue_style('wc-expiry-stock-manager', plugins_url('../assets/css/expiryStockManager.css', __FILE__));
     }
 

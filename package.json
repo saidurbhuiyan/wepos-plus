@@ -6,9 +6,9 @@
   "license": "GPLv2",
   "private": true,
   "scripts": {
-    "dev": "webpack --mode=development --progress --watch",
+    "dev": "echo '{\"mode\":\"development\"}' > build_mode.json && webpack --mode=development --progress --watch",
     "dev:build": "webpack --mode=development --progress",
-    "build": "webpack --mode=production --progress && wpvuei18n makepot",
+    "build": "echo '{\"mode\":\"production\"}' > build_mode.json && webpack --mode=production --progress && wpvuei18n makepot",
     "version-replace": "node ./bin/scripts/version-replace",
     "zip": "./bin/zip.sh"
   },

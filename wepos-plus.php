@@ -280,6 +280,11 @@ final class WePOS {
         define( 'WEPOS_URL', plugins_url( '', WEPOS_FILE ) );
         define( 'WEPOS_ASSETS', WEPOS_URL . '/assets' );
 	    define('PARTIAL_PAYMENT_TABLE', 'wepos_order_partial_payment_stats');
+        $build_mode = json_decode(file_get_contents(WEPOS_PATH . '/build_mode.json'), true, 512, JSON_THROW_ON_ERROR);
+
+        if (!defined('VUE_BUILD_MODE')) {
+            define('VUE_BUILD_MODE', $build_mode['mode'] === 'development');
+        }
     }
 
     /**
