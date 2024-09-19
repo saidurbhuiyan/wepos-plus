@@ -41,8 +41,16 @@ class PartialPayment
 		add_action('init', [$this, 'add_view_order_capability'], 11);
 		add_action('add_meta_boxes', [$this, 'add_partial_payment_meta_box'], 10, 2);
 		add_filter('woocommerce_reports_order_statuses', [$this, 'append_partial_order_post_status'], 20, 1);
+        add_filter( 'woocommerce_order_is_paid_statuses', [$this, 'append_partial_order_post_status']);
+        add_action('woocommerce_order_status_partial', [$this, 'partial_reduce_stock_levels']);
 
 	}
+
+    public function partial_reduce_stock_levels($order_id){
+        $order = wc_get_order($order_id);
+        $order->reduce_order_stock();
+        $order->save();
+    }
 
 
 	/**
