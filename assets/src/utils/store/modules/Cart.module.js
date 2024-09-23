@@ -15,10 +15,12 @@ export default {
         getSubtotal( state ) {
             var subtotal = 0;
             weLo_.forEach( state.cartdata.line_items, function( item, key ) {
+
                 if ( item.on_sale ) {
                     subtotal += (item.quantity*item.sale_price)
                 } else {
-                    subtotal += (item.quantity*item.regular_price)
+                    const price = item.vendor_type === 'local' ? item.local_price : item.export_price
+                    subtotal += (item.quantity*(item.vendor_type === 'regular' ? item.regular_price : price))
                 }
             });
 
@@ -138,6 +140,8 @@ export default {
             cartObject.quantity           = 1;
             cartObject.regular_price      = product.regular_display_price;
             cartObject.sale_price         = product.sales_display_price;
+            cartObject.local_price        = product.local_display_price || product.regular_display_price;
+            cartObject.export_price       = product.export_display_price || product.regular_display_price;
             cartObject.on_sale            = product.on_sale;
             cartObject.attribute          = product.attributes;
             cartObject.variation_id       = ( product.parent_id !== 0 ) ? product.id : 0;
@@ -150,6 +154,7 @@ export default {
             cartObject.stock_quantity     = product.stock_quantity;
             cartObject.stock_expiry       = product.stock_expiry
             cartObject.expiry             = null
+            cartObject.vendor_type        = product.vendor_type?? 'regular';
 
             var index = weLo_.findIndex( state.cartdata.line_items, { product_id: cartObject.product_id, variation_id: cartObject.variation_id} );
 
@@ -189,8 +194,9 @@ export default {
             let { key, expiryDate, quantity } = payload;
 
             let item = state.cartdata.line_items[key];
+            const stockExpiry = item.stock_expiry.find(expiry => expiry.date === expiryDate);
 
-            if (!item || !expiryDate || quantity === null) return;
+            if (!item || !expiryDate || quantity === null || !stockExpiry) return;
             quantity = parseInt(quantity);
 
             if (!item.expiry) item.expiry = [];
@@ -212,7 +218,12 @@ export default {
                 newItemQuantity = quantity - expireExistQuantity;
                 expiryExists.quantity = quantity;
             } else {
-                item.expiry.push({ date: expiryDate, quantity: quantity });
+                item.expiry.push({
+                    date: expiryDate,
+                    quantity: quantity,
+                    company: stockExpiry.company?? null,
+                    buying_price: stockExpiry.buying_price?? null,
+                });
             }
 
             item.quantity = itemQuantity + newItemQuantity;

@@ -1,5 +1,9 @@
 <template>
-  <div id="wepos-main" v-cloak v-hotkey="hotkeys">
+  <div v-cloak v-hotkey="hotkeys">
+  <div class="wepos-title">
+    <h1>{{ selectedVendorType }} POS</h1>
+  </div>
+  <div id="wepos-main">
     <div class="content-product">
       <div class="top-panel wepos-clearfix">
         <div class="search-bar">
@@ -156,6 +160,7 @@
         </template>
         <div class="product-loading" v-if="productLoading">
           <div class="spinner spinner-loading"></div>
+          <div class="loading-percentage">Product Loading: {{productLoadedPercentage}}</div>
         </div>
       </div>
     </div>
@@ -165,8 +170,8 @@
         <div class="action">
           <div class="more-options">
             <v-popover offset="5" popover-base-class="wepos-dropdown-menu tooltip popover" placement="bottom-end"
-                       :open="showQucikMenu">
-              <button class="wepos-button" @click.prevent="openQucikMenu()"><span
+                       :open="showQuickMenu">
+              <button class="wepos-button" @click.prevent="openQuickMenu()"><span
                   class="more-icon flaticon-more"></span></button>
               <template slot="popover">
                 <ul>
@@ -177,6 +182,9 @@
                   />
                   <li><a href="#" @click.prevent="emptyCart"><span
                       class="flaticon-empty-cart quick-menu-icon"></span>{{ __('Empty Cart', 'wepos') }}</a></li>
+                  <!-- Vendor Dropdown -->
+                  <vendor-dropdown v-if="!productLoading" @link-clicked="closeQuickMenu" @selected-vendor="updateSelectedMenu" />
+
                   <li><a href="#" @click.prevent="openHelp"><span
                       class="flaticon-information quick-menu-icon"></span>{{ __('Help', 'wepos') }}</a></li>
                   <li class="divider"></li>
@@ -238,7 +246,9 @@
                       <span class="regular-price">{{ formatPrice(item.quantity * item.regular_price) }}</span>
                     </template>
                     <template v-else>
-                      <span class="sale-price">{{ formatPrice(item.quantity * item.regular_price) }}</span>
+                      <span class="sale-price" v-if="item.vendor_type === 'local'">{{ formatPrice(item.quantity * item.local_price) }}</span>
+                      <span class="sale-price" v-else-if="item.vendor_type === 'export'">{{ formatPrice(item.quantity * item.export_price) }}</span>
+                      <span class="sale-price" v-else>{{ formatPrice(item.quantity * item.regular_price) }}</span>
                     </template>
 
                   </td>
@@ -784,6 +794,7 @@
         :printdata="printdata"
     />
   </div>
+  </div>
 </template>
 
 <script>
@@ -796,6 +807,7 @@ import MugenScroll from 'vue-mugen-scroll';
 import PrintReceipt from './PrintReceipt.vue';
 import PrintReceiptHtml from './PrintReceiptHtml.vue';
 import CustomerNote from './CustomerNote.vue';
+import VendorDropdown from "./VendorDropdown.vue";
 
 let Modal = wepos_get_lib('Modal');
 
@@ -812,15 +824,17 @@ export default {
     FeeKeypad,
     PrintReceipt,
     PrintReceiptHtml,
-    CustomerNote
+    CustomerNote,
+    VendorDropdown
   },
 
   data() {
     return {
       showHelp: false,
-      showQucikMenu: false,
+      showQuickMenu: false,
       productView: 'grid',
       productLoading: false,
+      productLoadedPercentage: '0%',
       viewVariationPopover: false,
       showModal: false,
       showPaymentReceipt: false,
@@ -860,6 +874,7 @@ export default {
       paymentType: 'full',
       selectedExpiryKey: null,
       AvailableExpiryData: null,
+      selectedVendorType: 'regular',
 
     }
   },
@@ -976,13 +991,30 @@ export default {
     handleExpireQuantityInput(value, min, max){
       return !value || parseInt(value)<= parseInt(max) ? (!value ||parseInt(value ) >= parseInt(min)? value : min) : max;
     },
-    openQucikMenu() {
-      this.showQucikMenu = true;
+
+    setVendorTypeFromUrl(vendorType = 'regular') {
+      const urlParams = this.$route.query;
+      if(urlParams.vendor_type && urlParams.vendor_type !== vendorType && urlParams.vendor_type !== this.selectedVendorType) {
+        this.selectedVendorType = urlParams.vendor_type
+        return
+      }
+
+      if (vendorType !== this.selectedVendorType) {
+        this.selectedVendorType =  vendorType
+      }
+
+      },
+
+    closeQuickMenu() {
+      this.showQuickMenu = false;
+    },
+    openQuickMenu() {
+      this.showQuickMenu = true;
     },
     openHelp(e) {
       e.preventDefault();
       this.showHelp = true;
-      this.showQucikMenu = false;
+      this.closeQuickMenu();
     },
     closeHelp() {
       this.showHelp = false;
@@ -1014,7 +1046,7 @@ export default {
       this.showPaymentReceipt = false;
       this.cashAmount = '';
       this.eventBus.$emit('emptycart', this.orderdata);
-      this.showQucikMenu = false;
+      this.closeQuickMenu();
     },
     toggleProductView(e) {
       e.preventDefault();
@@ -1041,6 +1073,7 @@ export default {
       if (!this.$store.getters['Order/getCanProcessPayment']) {
         return;
       }
+      console.log(this.cartdata.line_items);
       var self = this,
           gateway = weLo_.find(this.availableGateways, {'id': this.orderdata.payment_method}),
           orderdata = wepos.hooks.applyFilters('wepos_order_form_data', {
@@ -1071,11 +1104,15 @@ export default {
                 value: self.paymentType
               },
               {
+                key: '_wepos_vendor_type',
+                value: this.selectedVendorType
+              },
+              {
                 key: '_wepos_product_expiry_data',
                 value: this.cartdata.line_items.map((item) => {
                   return {
                     product_id: item.product_id,
-                    expiry: item.expiry
+                    expiry: item.expiry,
                   }
                 })
               }
@@ -1112,6 +1149,8 @@ export default {
                       }
                     });
 
+                    this.updateProductOnSuccessOrder(response.line_items)
+
                     this.printdata = wepos.hooks.applyFilters('wepos_after_payment_print_data', {
                       billing: response.billing,
                       line_items: this.cartdata.line_items,
@@ -1131,8 +1170,10 @@ export default {
                       changeamount: this.changeAmount.toString(),
                       /* partial payment */
                       dueamount: this.dueAmountPartial.toString(),
-                      paymenttype: this.paymentType
+                      paymenttype: this.paymentType,
+                      vendor_type: this.selectedVendorType
                     }, orderdata);
+
                     $contentWrap.unblock();
                   } else {
                     $contentWrap.unblock();
@@ -1315,22 +1356,21 @@ export default {
       return fee.discount_type === 'percent' || fee.fee_type === 'percent' ? this.formatNumber(fee.value) + '%' : this.formatPrice(fee.total);
     },
     fetchProducts() {
-      if (this.page == 1) {
+      if (this.totalPages >= this.page) {
         this.productLoading = true;
-      }
 
-      if ((this.totalPages >= this.page)) {
-        wepos.api.get(wepos.rest.root + wepos.rest.posversion + '/products?status=publish&per_page=30&page=' + this.page)
+        wepos.api.get(wepos.rest.root + wepos.rest.posversion + '/products?status=publish&per_page=30&page=' + this.page+'&vendor_type='+this.selectedVendorType)
             .done((response, status, xhr) => {
               this.appendProducts(response);
               this.page += 1;
               this.totalPages = parseInt(xhr.getResponseHeader('X-WP-TotalPages'));
-              this.productLoading = false;
             }).then((response, status, xhr) => {
           this.fetchProducts();
+          this.productLoadedPercentage = Math.floor((this.page / this.totalPages) * 100) + '%';
         });
       } else {
         this.productLoading = false;
+        this.productLoadedPercentage = '0%';
       }
     },
     appendProducts(products) {
@@ -1368,7 +1408,7 @@ export default {
           return lineItem.product_id;
         });
 
-        wepos.api.get(wepos.rest.root + wepos.rest.posversion + '/products?include=' + productIds.toString())
+        wepos.api.get(wepos.rest.root + wepos.rest.posversion + '/products?include=' + productIds.toString()+'&vendor_type='+this.selectedVendorType)
             .then((response) => {
               let foundProducts = response.map((product) => {
                 return product.id;
@@ -1426,6 +1466,7 @@ export default {
       }
 
       product.stock_expiry = product.meta_data.some((meta) => meta.key === '_expiry_rule' && meta.value === 'yes') ? product.meta_data.find((meta) => meta.key === '_expiry_data')?.value : null;
+
       this.$store.dispatch('Cart/addToCartAction', product);
     },
     toggleEditQuantity(product, key) {
@@ -1444,6 +1485,29 @@ export default {
     },
     removeQuantity(key) {
       this.$store.dispatch('Cart/removeItemQuantityAction', key);
+    },
+
+    updateProductOnSuccessOrder(OrderItems) {
+      const productIds = OrderItems.map(orderItem => orderItem.product_id).join(',');
+        wepos.api.get(wepos.rest.root + wepos.rest.posversion + '/products?include=' + productIds+'&vendor_type='+this.selectedVendorType)
+            .then((response) => {
+              this.products = this.products.map((product) => {
+                const updatedProduct = response?.find(up => up.id === product.id);
+                return updatedProduct ?? product;
+              })
+            })
+            .fail(() => {
+              this.products = this.products.map((product) => {
+                const orderItem = OrderItems.find(orderItem => orderItem.product_id === product.id);
+                if (orderItem) {
+                  const quantity = product.stock_quantity - orderItem.quantity
+                  product.stock_quantity = quantity > 0 ? quantity : 0;
+                  product.stock_status = quantity > 0 ? product.stock_status : 'outofstock';
+
+                }
+                return product;
+              });
+            });
     },
 
     updateExpiryQuantity(key, expiryDate, quantity) {
@@ -1555,11 +1619,23 @@ export default {
       let inputCashAmount = document.querySelector('#input-cash-amount');
       inputCashAmount.focus();
     },
+
+     updateSelectedMenu(vendorType = 'regular') {
+      if (vendorType !== this.selectedVendorType) {
+        this.setVendorTypeFromUrl(vendorType)
+        this.products = [];
+        this.page = 1;
+        this.productLoadedPercentage = '0%';
+        this.fetchProducts();
+        this.emptyCart()
+      }
+    },
   },
 
   async created() {
     this.fetchSettings();
     this.fetchTaxes();
+    this.setVendorTypeFromUrl();
     this.fetchProducts();
     this.fetchGateway();
     this.fetchCategories();
@@ -1591,9 +1667,20 @@ export default {
 </script>
 
 <style lang="less">
+.wepos-title {
+  h1 {
+    font-size: 18px;
+    font-weight: bold;
+    padding-top: 10px;
+    margin: 2px;
+    text-align: center;
+    text-transform: capitalize;
+  }
+
+}
 
 #wepos-main {
-  padding: 20px;
+  padding: 10px 20px 20px;
   display: flex;
 
   .content-product {
@@ -2135,7 +2222,14 @@ export default {
         padding: 10px;
         text-align: center;
         font-size: 16px;
-        color: #c6cace;
+        color: #9092a2;
+
+        .loading-percentage{
+          left: 42%;
+          position: absolute;
+          top: 30%;
+          font-weight: bold;
+        }
       }
 
       .no-product-found {
@@ -3014,6 +3108,8 @@ export default {
     }
   }
 }
+
+
 
 
 </style>

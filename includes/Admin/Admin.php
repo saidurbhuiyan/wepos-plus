@@ -36,7 +36,7 @@ class Admin {
                 [
                     'title' => __( 'View POS', 'wepos' ),
                     'cap' => $capability,
-                    'url' => site_url() . '/wepos/#'
+                    'url' => site_url() . '/wepos/#/?vendor_type=regular'
                 ],
             ], $slug, $capability, $hook );
 

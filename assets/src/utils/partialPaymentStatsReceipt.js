@@ -105,7 +105,7 @@ async function generateReceiptPDF(printdata, settings) {
             doc.setTextColor(0, 0, 0);
             expiry.forEach(data => {
                 yPosition += 5;
-                doc.text(`${data.quantity}x ${data.date}`, 14, yPosition);
+                doc.text(`${data.quantity}x ${formatDate(data.date, 'd/m/Y')}`, 14, yPosition);
             });
         }
 
@@ -175,7 +175,16 @@ async function generateReceiptPDF(printdata, settings) {
     doc.line(10, yPosition, 200, yPosition);
     yPosition += 10;
 
+    // Vendor Type
+    let vendorType = printdata.meta_data.find((data) => data.key === '_wepos_vendor_type')
+    vendorType = vendorType.value || 'regular'
+
+    doc.setFont("Helvetica", "normal");
+    doc.text('Vendor Type:', 10, yPosition);
+    doc.text(vendorType.charAt(0).toUpperCase() + vendorType.slice(1), 198, yPosition, {align: 'right'});
+
     // Payment Method
+    yPosition += 5;
     doc.setFont("Helvetica", "normal");
     doc.text('Payment method:', 10, yPosition);
     doc.text(printdata.payment_method_title || '', 198, yPosition, {align: 'right'});
@@ -294,7 +303,7 @@ function formatPrice(amount) {
 }
 
 // Convert WP format to DayJS format
-function formatDate(dateString) {
+function formatDate(dateString, format = null) {
     const date = new Date(dateString);
 
     // Mapping of PHP to JavaScript Intl options
@@ -317,7 +326,7 @@ function formatDate(dateString) {
     const formatOptions = options[partialPaymentData.dateFormat] || { year: 'numeric', month: 'long', day: 'numeric' };
 
     // Use Intl.DateTimeFormat to format the date
-    return new Intl.DateTimeFormat('en-US', formatOptions).format(date);
+    return new Intl.DateTimeFormat('en-US', format ?? formatOptions).format(date);
 }
 
 

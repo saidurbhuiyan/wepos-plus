@@ -31,7 +31,6 @@ class PartialPayment
 		add_filter('wc_order_statuses', [$this, 'add_partial_payment_to_order_statuses']);
 
 		add_action('admin_notices', [$this, 'partial_payment_bulk_action_admin_notice']);
-		add_action('admin_head', [$this, 'add_partial_payment_status_styles']);
 		add_filter('woocommerce_admin_order_actions', [$this, 'add_actions_button_on_partial_order_status'], 100, 2);
 
 		add_action('woocommerce_admin_order_totals_after_tax', [$this, 'due_amount_on_order_details']);
@@ -46,6 +45,10 @@ class PartialPayment
 
 	}
 
+    /**
+     * reduce stock levels after partial payment
+     * @param $order_id
+     */
     public function partial_reduce_stock_levels($order_id){
         $order = wc_get_order($order_id);
         $order->reduce_order_stock();
@@ -227,10 +230,14 @@ class PartialPayment
 		$columns = [];
 		foreach ($defaults as $column_name => $column_info) {
 			$columns[$column_name] = $column_info;
+            // Due amount
 			if ('order_total' === $column_name) {
 				$columns['order_due_amount'] = apply_filters('wepos_order_due_amount_column_title', __('Due Amount', 'partial-payment'));
 			}
 		}
+
+        // Vendor type
+        $columns['vendor_type'] = apply_filters('wepos_order_vendor_type_column_title', __('Vendor Type', 'wepos'));
 
 		return $columns;
 	}
@@ -244,8 +251,9 @@ class PartialPayment
 	 */
 	public function render_order_due_amount_content($column_name, $post_id)
 	{
+        $order = wc_get_order($post_id);
+        // Due amount
 		if ('order_due_amount' === $column_name) {
-			$order = wc_get_order($post_id);
 			$paid = get_total_paid($order->get_id());
 			$due = $order->get_meta('_wepos_cash_payment_type') === 'partial' ? $order->get_total() - $paid : 0;
 
@@ -253,6 +261,11 @@ class PartialPayment
 
 			echo wc_price($due > 0 ? $due : 0, ['currency' => $currency]);
 		}
+
+        // Vendor type
+        if ('vendor_type' === $column_name) {
+            echo ucfirst($order->get_meta('_wepos_vendor_type')) ?: 'Regular';
+        }
 	}
 
 	/**
@@ -261,7 +274,10 @@ class PartialPayment
 	 */
 	public function add_order_due_amount_column_style()
 	{
-		$css = '.widefat .column-order_due_amount, .widefat .column-order_due_amount { width: 9%; text-align: center; }';
+		$css = '.widefat .column-order_due_amount, .widefat .column-order_due_amount, .widefat .column-vendor_type { width: 9%; text-align: center; } .order-status.status-partial {
+                background: #ffeb3b;
+                color: #000;
+            } .text-success { color: #4caf50; } .text-info{ color: #2196f3; } .text-danger { color: #f44336; } .text-warning { color: #ff9800; } .text-primary { color: #9c27b0; } .text-secondary { color: #9e9e9e; }';
 		wp_add_inline_style('woocommerce_admin_styles', $css);
 	}
 
@@ -299,20 +315,6 @@ class PartialPayment
 		}
 
 		return $new_statuses;
-	}
-
-	/**
-	 * Add style for partial payment order status
-	 * @return void
-	 */
-	public function add_partial_payment_status_styles()
-	{
-		echo '<style>
-            .order-status.status-partial {
-                background: #ffeb3b;
-                color: #000;
-            }
-        </style>';
 	}
 
 	/**

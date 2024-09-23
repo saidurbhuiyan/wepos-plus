@@ -43,7 +43,27 @@ class CustomManager {
 		add_action('woocommerce_rest_insert_customer', [$this,'save_nif_from_request'], 10, 2);
 		add_filter('woocommerce_rest_customer_query', [$this,'search_customers_by_search_by_data'], 8, 2);
 
+        // Add custom product price fields
+        add_action( 'woocommerce_product_options_pricing', [$this,'add_custom_product_price_fields'] );
+        add_action( 'woocommerce_process_product_meta', [$this, 'save_custom_product_price_fields']);
+        add_filter('woocommerce_rest_prepare_product_object', [$this,'add_local_and_export_prices_to_api_response'], 10, 3);
+        add_action('woocommerce_rest_pre_insert_shop_order_object', [$this, 'adjust_price_based_on_vendor_type']);
+        add_filter('gettext', [$this,'custom_order_details_title'], 20);
+        add_filter('ngettext', [$this,'custom_order_details_title'], 20);
 	}
+
+    public function custom_order_details_title($translated_text) {
+        global $pagenow, $post;
+        if ($pagenow === 'post.php' && isset($post->ID) && $translated_text === '%1$s #%2$s details' && get_post_type($post->ID) === 'shop_order') {
+
+            $order = wc_get_order($post->ID);
+            $vendor = $order->get_meta('_wepos_vendor_type') ?: 'regular';
+            $translated_text = '%1$s #%2$s details ('.$vendor.')';
+
+        }
+        return $translated_text;
+    }
+
 
 	/**
 	 * Add the NIF field to the WooCommerce checkout billing fields.
@@ -341,7 +361,108 @@ class CustomManager {
         return $args;
     }
 
+    // Add custom price fields to product edit page
+    public function add_custom_product_price_fields() {
+        woocommerce_wp_text_input( array(
+            'id' => '_local_price',
+            'label' => __('Local Price ('. get_woocommerce_currency_symbol(). ')', 'woocommerce'),
+            'desc_tip' => 'true',
+            'description' => __('Enter the local price for this product.', 'woocommerce'),
+            'type' => 'text',
+            'class' => 'short wc_input_price',
+        ));
+
+        woocommerce_wp_text_input( array(
+            'id' => '_export_price',
+            'label' => __('Export Price ('. get_woocommerce_currency_symbol(). ')', 'woocommerce'),
+            'desc_tip' => 'true',
+            'description' => __('Enter the export price for this product.', 'woocommerce'),
+            'type' => 'text',
+            'class' => 'short wc_input_price',
+        ));
+    }
+
+    // Save custom price fields
+    public function save_custom_product_price_fields( $post_id ) {
+        $local_price = isset($_POST['_local_price']) ? sanitize_text_field($_POST['_local_price']) : '';
+        update_post_meta($post_id, '_local_price', esc_attr($local_price));
+
+        $export_price = isset($_POST['_export_price']) ? sanitize_text_field($_POST['_export_price']) : '';
+        update_post_meta($post_id, '_export_price', esc_attr($export_price));
+    }
+
+    /**
+     * Add local and export prices to API response
+     * @param array $response API response.
+     * @param WC_Product $product Product object.
+     */
+    public function add_local_and_export_prices_to_api_response($response, $product, $request) {
+        // Get the custom fields
+        $local_price = get_post_meta($product->get_id(), '_local_price', true);
+        $export_price = get_post_meta($product->get_id(), '_export_price', true);
+
+        // Add custom fields to the response data
+        $response->data['vendor_type'] = $request['vendor_type'] ?? 'regular';
+        $response->data['local_price'] = trim(!empty($local_price) ?
+            number_format((float)str_replace(',', '.', $local_price), 2, '.', '')
+            : '');
+        $response->data['local_display_price'] = $response->data['local_price'];
+        $response->data['export_price'] = trim(!empty($export_price) ?
+            number_format((float)str_replace(',', '.', $export_price), 2, '.', '')
+            : '');
+        $response->data['export_display_price'] = $response->data['export_price'];
 
 
+        if(isset($request['vendor_type']) && in_array($request['vendor_type'], ['local', 'export'])) {
+           $price = $request['vendor_type'] === 'local' ? $response->data['local_price'] : $response->data['export_price'];
+
+            $response->data['price'] = !empty($price) ? $price : $response->data['price'];
+            $response->data['price_html'] = wc_price($response->data['price']);
+        }
+
+        return $response;
+    }
+
+
+    /**
+     * Adjust prices based on vendor type
+     * @param $order
+     * @return mixed
+     */
+    public function adjust_price_based_on_vendor_type($order) {
+
+            foreach ($order->get_items() as $item) {
+                $product_id = $item->get_product_id();
+                $product = wc_get_product($product_id);
+                $vendor = $order->get_meta('_wepos_vendor_type', true);
+
+                if ($product) {
+                    // Adjust prices based on vendor
+                    switch ($vendor) {
+                        case 'local':
+                            $local_price = get_post_meta($product_id, '_local_price', true);
+                            if ($local_price) {
+                                $item->set_subtotal($local_price);
+                                $item->set_total($local_price);
+                            }
+                            break;
+
+                        case 'export':
+                            $export_price = get_post_meta($product_id, '_export_price', true);
+                            if ($export_price) {
+                                $item->set_subtotal($export_price);
+                                $item->set_total($export_price);
+                            }
+                            break;
+
+                        case 'regular':
+                        default:
+                            break;
+                    }
+                }
+            }
+
+        return $order;
+    }
 
 }

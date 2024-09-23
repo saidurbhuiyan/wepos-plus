@@ -26,6 +26,7 @@
           </div>
         </div>
         <div class="order-info">
+            <span class="wepos-left"><strong>{{ __( 'Vendor Type', 'wepos' ) }}: {{ printdata.vendor_type }}</strong></span>
             <span class="wepos-left"><strong>{{ __( 'Order ID', 'wepos' ) }}: #{{ printdata.order_id }}</strong></span>
             <span class="wepos-right"><strong>{{ __( 'Order Date', 'wepos' ) }}: {{ formatDate( printdata.order_date ) }}</strong></span>
             <div class="wepos-clearfix"></div>
@@ -52,7 +53,7 @@
                             }}</span>
                               </li>
                               <li style="display: block;" v-for="expiry in item.expiry">
-                                <span class="attr_value">{{ expiry.quantity }}x {{ expiry.date }}</span>
+                                <span class="attr_value">{{ expiry.quantity }}x {{ formatDate(expiry.date, 'd/m/Y') }}</span>
                               </li>
                             </ul>
                           </div>
@@ -69,7 +70,10 @@
                                 <span class="sale-price">{{ formatPrice( item.quantity*item.sale_price ) }}</span>
                             </template>
                             <template v-else>
-                                <span class="sale-price">{{ formatPrice( item.quantity*item.regular_price ) }}</span>
+                              <span class="sale-price" v-if="item.vendor_type === 'local'">{{ formatPrice(item.quantity * item.local_price) }}</span>
+                              <span class="sale-price" v-else-if="item.vendor_type === 'export'">{{ formatPrice(item.quantity * item.export_price) }}</span>
+                              <span class="sale-price" v-else>{{ formatPrice(item.quantity * item.regular_price) }}</span>
+
                             </template>
                         </td>
                     </tr>
@@ -104,6 +108,10 @@
                     </tr>
                     <tr class="divider">
                         <td colspan="3"></td>
+                    </tr>
+                    <tr>
+                        <td colspan="2">{{ __( 'Vendor Type', 'wepos' ) }}</td>
+                        <td class="price">{{ printdata.vendor_type }}</td>
                     </tr>
                     <tr>
                         <td colspan="2">{{ __( 'Payment method', 'wepos' ) }}</td>
@@ -172,9 +180,13 @@ export default {
         }
     },
     methods: {
-        formatDate( date ) {
-            var date = new Date( date );
-            return date.toLocaleString();
+        formatDate( date, format = null ) {
+          const selectedDate = new Date( date );
+
+          if (format) {
+            return new Intl.DateTimeFormat('en-US', format).format(selectedDate);
+          }
+            return selectedDate.toLocaleString();
         },
 
       hasFixedProductDiscount() {
@@ -347,6 +359,7 @@ export default {
                             &.price {
                                 text-align: right;
                                 color: #758598;
+                                text-transform: capitalize;
                                 span {
                                     color: #758598;
 

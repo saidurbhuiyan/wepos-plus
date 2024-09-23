@@ -146,7 +146,7 @@ class Frontend {
      */
     public function view_pos_menu_endpoint( $url, $endpoint, $value, $permalink ) {
         if ( 'view-wepos' === $endpoint ) {
-            $url = untrailingslashit( get_site_url() ) . '/wepos/#';
+            $url = untrailingslashit( get_site_url() ) . '/wepos/#/?vendor=regular';
         }
 
         return $url;

@@ -133,7 +133,7 @@ class Dokan {
             $url['wepos'] = [
                 'title' => __( 'View POS', 'wepos' ),
                 'icon'  => '<i class="fa fa-barcode" aria-hidden="true"></i>',
-                'url'   => untrailingslashit( get_site_url() ) . '/wepos/#',
+                'url'   => untrailingslashit( get_site_url() ) . '/wepos/#/?vendor=regular',
                 'pos'   => 195,
             ];
         }
