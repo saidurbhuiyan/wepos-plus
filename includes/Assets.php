@@ -262,6 +262,11 @@ class Assets {
                 'name'      => 'Settings',
                 'component' => 'Settings'
             ),
+            array(
+                'path'      => '/user-activity',
+                'name'      => 'UserActivity',
+                'component' => 'UserActivity'
+            ),
         );
 
         return apply_filters( 'wepos_admin_routes', $routes );

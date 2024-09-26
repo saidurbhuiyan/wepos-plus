@@ -34,6 +34,11 @@ class Admin {
                     'url' => 'admin.php?page=' . $slug . '#/settings'
                 ],
                 [
+                    'title' => __( 'User Activity Log', 'wepos' ),
+                    'cap' => $capability,
+                    'url' => 'admin.php?page=' . $slug . '#/user-activity'
+                ],
+                [
                     'title' => __( 'View POS', 'wepos' ),
                     'cap' => $capability,
                     'url' => site_url() . '/wepos/#/?vendor_type=regular'

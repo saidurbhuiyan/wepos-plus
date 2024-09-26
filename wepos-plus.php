@@ -3,7 +3,7 @@
 Plugin Name: wePOSPlus - Point Of Sale (POS) for WooCommerce
 Plugin URI:
 Description: A beautiful and fast Point of Sale (POS) system for WooCommerce
-Version: 1.3.0
+Version: 1.3.2
 Author: weDevs + saidur
 Author URI:
 Text Domain: weposPlus
@@ -47,6 +47,7 @@ use WeDevs\WePOS\Admin\LimitedTimePromotion;
 use WeDevs\WePOS\Admin\Products;
 use WeDevs\WePOS\Admin\Settings;
 use WeDevs\WePOS\Admin\Updates;
+use WeDevs\WePOS\Admin\UserActivityLogger;
 use WeDevs\WePOS\Assets;
 use WeDevs\WePOS\Common;
 use WeDevs\WePOS\CustomManager;
@@ -74,7 +75,7 @@ final class WePOS {
      *
      * @var string
      */
-    public $version = '1.3.0';
+    public $version = '1.3.2';
 
     /**
      * Holds various class instances
@@ -271,6 +272,7 @@ final class WePOS {
      * Define the constants
      *
      * @return void
+     * @throws JsonException
      */
     public function define_constants() {
         define( 'WEPOS_VERSION', $this->version );
@@ -280,6 +282,7 @@ final class WePOS {
         define( 'WEPOS_URL', plugins_url( '', WEPOS_FILE ) );
         define( 'WEPOS_ASSETS', WEPOS_URL . '/assets' );
 	    define('PARTIAL_PAYMENT_TABLE', 'wepos_order_partial_payment_stats');
+        define('USER_ACTIVITY_LOG_TABLE', 'wepos_user_activity_logs');
         $build_mode = json_decode(file_get_contents(WEPOS_PATH . '/build_mode.json'), true, 512, JSON_THROW_ON_ERROR);
 
         if (!defined('VUE_BUILD_MODE')) {
@@ -364,6 +367,7 @@ final class WePOS {
         if ( is_admin() ) {
             $this->container['admin']    = new Admin();
             $this->container['settings'] = new Settings();
+            $this->container['user_activity_logger'] = new UserActivityLogger();
 
             new Products();
             new Updates();
@@ -383,6 +387,7 @@ final class WePOS {
 
         // Payment gateway manager
         $this->container['gateways'] = new PaymentGatewayManager();
+
     }
 
     /**

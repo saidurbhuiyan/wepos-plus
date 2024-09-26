@@ -6,6 +6,7 @@
 function wepos_1_3_0_updates() {
 	global $wpdb;
 	$table_name = $wpdb->prefix . PARTIAL_PAYMENT_TABLE;
+    $table_name = esc_sql($table_name);
 	$charset_collate = $wpdb->get_charset_collate();
 
 	if ($wpdb->get_var("SHOW TABLES LIKE '{$table_name}'") != $table_name) {
