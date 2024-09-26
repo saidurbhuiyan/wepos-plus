@@ -33,7 +33,7 @@
 </template>
 
 <script>
-import angleSmallDownIcon from "@/utils/icons/angleSmallDownIcon.vue";
+import angleSmallDownIcon from "@/utils/icons/AngleSmallDownIcon.vue";
 import SellerIcon from "@/utils/icons/SellerIcon.vue";
 
 export default {

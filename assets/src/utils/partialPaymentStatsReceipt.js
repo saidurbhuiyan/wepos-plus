@@ -1,5 +1,5 @@
 // generate receipt pdf
-async function generateReceiptPDF(printdata, settings) {
+async function generateReceiptPDF(printdata, settings, actionType = 'generate-receipt') {
     const {jsPDF} = window.jspdf;
     const doc = new jsPDF({
         orientation: 'p',
@@ -294,7 +294,24 @@ async function generateReceiptPDF(printdata, settings) {
     // Open PDF in new tab
     const pdfBlob = doc.output('blob');
     const pdfUrl = URL.createObjectURL(pdfBlob);
-    window.open(pdfUrl);
+
+    // Open PDF in new tab as default action
+    let actionUrl = pdfUrl;
+
+    //share to whatsapp
+    if(actionType === 'share-whatsapp') {
+        const whatsappMessage = encodeURIComponent("Check out Your Order Receipt: " + pdfUrl);
+        actionUrl = `https://api.whatsapp.com/send?text=${whatsappMessage}`;
+    }
+
+    if (actionType === 'share-email') {
+        const emailSubject = encodeURIComponent("Your Order Receipt");
+        const emailBody = encodeURIComponent("Hello,\n\nPlease check out your order receipt attached: " + pdfUrl);
+        actionUrl = `mailto:?subject=${emailSubject}&body=${emailBody}`;
+    }
+
+    // Open PDF in new tab in preferred action
+    window.open(actionUrl, "_blank");
 }
 
 // Format price
@@ -362,6 +379,8 @@ jQuery(document).ready(function($) {
         const totalPartialDue = parseFloat(partialReceipt.attr('data-partial-due')?? 0).toFixed(2);
         const partialPaymentId = partialReceipt.attr('data-partial-payment-id');
         const {currentPayment, pastPayment} = searchByID(partialPaymentId, partialPaymentData.partialPaymentStats)
+        const actionType = partialReceipt.attr('data-action-type');
+
         try {
             printData = await $.ajax({
                 type: 'POST',
@@ -378,7 +397,7 @@ jQuery(document).ready(function($) {
             const parser = new DOMParser(),
                 dom = parser.parseFromString(partialPaymentData.settings.wepos_receipts.receipt_header, "text/html");
 
-            await generateReceiptPDF(printData, partialPaymentData.settings);
+            await generateReceiptPDF(printData, partialPaymentData.settings, actionType);
         } catch (error) {
             console.log(error);
         }

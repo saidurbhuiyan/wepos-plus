@@ -118,7 +118,7 @@ class PartialPayment
                     <th class="manage-column column-paid-amount"><?php esc_html_e('Paid Amount', 'wepos'); ?></th>
                     <th class="manage-column column-total-due"><?php esc_html_e('Total Due', 'wepos'); ?></th>
                     <th class="manage-column column-created-date"><?php esc_html_e('Created Date', 'wepos'); ?></th>
-                    <th class="manage-column column-receipt" style="text-align: center;"><?php esc_html_e('Receipt', 'wepos'); ?></th>
+                    <th class="manage-column column-receipt" style="text-align: center;"><?php esc_html_e('Actions', 'wepos'); ?></th>
                 </tr>
                 </thead>
                 <tbody>
@@ -134,7 +134,12 @@ class PartialPayment
 								<?php echo esc_html(date_i18n(get_option('date_format') ?? 'Y-m-d', strtotime($stat->date_created))); ?>
                             </td>
                             <td class="column-receipt" style="text-align: center;">
-                                <a class="partial-receipt" href="#" data-date-partial-paid="<?php echo date_i18n(get_option('date_format') ?? 'Y-m-d', strtotime($stat->date_created)); ?>" data-partial-paid="<?php echo $total_paid; ?>" data-partial-paid-amount="<?php echo $stat->paid; ?>" data-partial-due="<?php echo $due > 0 ? $due : 0; ?>" data-partial-payment-id="<?php echo $stat->ID; ?>"><span class="dashicons dashicons-media-document"></span></a></td>
+                                <a class="partial-receipt text-primary" href="#" data-date-partial-paid="<?php echo date_i18n(get_option('date_format') ?? 'Y-m-d', strtotime($stat->date_created)); ?>" data-partial-paid="<?php echo $total_paid; ?>" data-partial-paid-amount="<?php echo $stat->paid; ?>" data-partial-due="<?php echo $due > 0 ? $due : 0; ?>" data-partial-payment-id="<?php echo $stat->ID; ?>" data-action-type="generate-receipt"><span class="dashicons dashicons-media-document"></span></a>
+
+                                <a class="partial-receipt text-success" href="#" data-date-partial-paid="<?php echo date_i18n(get_option('date_format') ?? 'Y-m-d', strtotime($stat->date_created)); ?>" data-partial-paid="<?php echo $total_paid; ?>" data-partial-paid-amount="<?php echo $stat->paid; ?>" data-partial-due="<?php echo $due > 0 ? $due : 0; ?>" data-partial-payment-id="<?php echo $stat->ID; ?>" data-action-type="share-whatsapp"><span class="dashicons dashicons-whatsapp"></span></a>
+
+                                <a class="partial-receipt text-info" href="#" data-date-partial-paid="<?php echo date_i18n(get_option('date_format') ?? 'Y-m-d', strtotime($stat->date_created)); ?>" data-partial-paid="<?php echo $total_paid; ?>" data-partial-paid-amount="<?php echo $stat->paid; ?>" data-partial-due="<?php echo $due > 0 ? $due : 0; ?>" data-partial-payment-id="<?php echo $stat->ID; ?>" data-action-type="share-email"><span class="dashicons dashicons-email-alt"></span></a>
+                            </td>
                         </tr>
 						<?php $total_paid -= $stat->paid; ?>
 					<?php endforeach; ?>
