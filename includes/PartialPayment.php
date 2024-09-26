@@ -43,6 +43,10 @@ class PartialPayment
         add_filter( 'woocommerce_order_is_paid_statuses', [$this, 'append_partial_order_post_status']);
         add_action('woocommerce_order_status_partial', [$this, 'partial_reduce_stock_levels']);
 
+        // pdf upload
+        add_filter('upload_mimes', [$this,'allow_pdf_uploads']);
+        add_action('wp', [$this,'my_custom_cron_schedule']);
+        add_action('delete_old_receipt_pdfs', [$this,'delete_old_receipt_pdfs']);
 	}
 
     /**
@@ -434,6 +438,7 @@ class PartialPayment
 
         wp_localize_script('partial-payment-stats', 'weposData', array(
             'orderUrl' => esc_url_raw(rest_url('wc/v3/orders')),
+            'mediaUrl' => esc_url_raw(rest_url('wp/v2/media')),
             'nonce' => wp_create_nonce('wp_rest'),
         ));
 
@@ -448,6 +453,16 @@ class PartialPayment
 
 	}
 
+    /**
+     * @param $mimes
+     * @return mixed
+     */
+    public function allow_pdf_uploads($mimes) {
+        $mimes['pdf'] = 'application/pdf';
+        return $mimes;
+    }
+
+
 	/**
 	 * Add view order capability to administrator
 	 * @return void
@@ -457,6 +472,42 @@ class PartialPayment
 		$role = get_role('administrator');
 		$role->add_cap('view_order', true);
 	}
+
+    /**
+     * @return void
+     */
+    public function my_custom_cron_schedule() {
+        if (!wp_next_scheduled('delete_old_receipt_pdfs')) {
+            wp_schedule_event(time(), 'daily', 'delete_old_receipt_pdfs');
+        }
+    }
+
+    public function delete_old_receipt_pdfs() {
+        $args = array(
+            'post_type'      => 'attachment',
+            'post_mime_type' => 'application/pdf',
+            'date_query'     => array(
+                array(
+                    'column' => 'post_date',
+                    'before' => '20 days ago',
+                ),
+            ),
+            'posts_per_page' => -1,
+        );
+
+        // Fetch all PDFs older than 20 days
+        $attachments = get_posts($args);
+
+        foreach ($attachments as $attachment) {
+            $file_name = basename(get_attached_file($attachment->ID)); // Get the file name
+
+            // Check if the file name starts with 'receipt-order-'
+            if (strpos($file_name, 'receipt-order-') === 0) {
+                wp_delete_attachment($attachment->ID, true); // Delete the PDF
+            }
+        }
+    }
+
 
 
 

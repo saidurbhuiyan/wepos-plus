@@ -1,5 +1,65 @@
+// upload pdf
+async function uploadPDF(pdfBlob, filename) {
+    const formData = new FormData();
+    formData.append('file', pdfBlob, filename);
+
+    // Check for existing PDF by filename
+    try {
+        const response = await fetch(weposData.mediaUrl + '?search=' + filename, {
+            method: 'GET',
+            headers: {
+                'X-WP-Nonce': weposData.nonce, // Send the nonce here
+            }
+        });
+
+        const data = await response.json();
+        if (data.length > 0) {
+            const existingPdfId = data[0].id;
+            return await replacePDF(existingPdfId, formData);
+        } else {
+            return await createPDF(formData);
+        }
+    } catch (error) {
+        console.error('Error:', error);
+    }
+}
+
+async function replacePDF(pdfId, formData) {
+    try {
+        const response = await fetch(weposData.mediaUrl + `/${pdfId}`, {
+            method: 'POST',
+            headers: {
+                'X-WP-Nonce': weposData.nonce, // Include the nonce in the request headers
+            },
+            body: formData
+        });
+
+        const data = await response.json();
+        return data.source_url;
+    } catch (error) {
+        console.error('Error:', error);
+    }
+}
+
+async function createPDF(formData) {
+    try {
+        const response = await fetch(weposData.mediaUrl, {
+            method: 'POST',
+            headers: {
+                'X-WP-Nonce': weposData.nonce, // Include the nonce in the request headers
+            },
+            body: formData
+        });
+
+        const data = await response.json();
+        return data.source_url;
+    } catch (error) {
+        console.error('Error:', error);
+    }
+}
+
 // generate receipt pdf
-async function generateReceiptPDF(printdata, settings, actionType = 'generate-receipt') {
+async function generateReceiptPDF(printdata, settings, partialPaymentId,actionType = 'generate-receipt') {
     const {jsPDF} = window.jspdf;
     const doc = new jsPDF({
         orientation: 'p',
@@ -177,7 +237,7 @@ async function generateReceiptPDF(printdata, settings, actionType = 'generate-re
 
     // Vendor Type
     let vendorType = printdata.meta_data.find((data) => data.key === '_wepos_vendor_type')
-    vendorType = vendorType.value || 'regular'
+    vendorType = vendorType && vendorType.value ? vendorType.value : 'regular'
 
     doc.setFont("Helvetica", "normal");
     doc.text('Vendor Type:', 10, yPosition);
@@ -293,11 +353,11 @@ async function generateReceiptPDF(printdata, settings, actionType = 'generate-re
 
     // Open PDF in new tab
     const pdfBlob = doc.output('blob');
-    const pdfUrl = URL.createObjectURL(pdfBlob);
-
+    // upload or replace PDF
+    const pdfUrl = await uploadPDF(pdfBlob, 'receipt-order-' + printdata.id+'-'+ partialPaymentId + '.pdf');
+    //const pdfUrl = URL.createObjectURL(pdfBlob);
     // Open PDF in new tab as default action
     let actionUrl = pdfUrl;
-
     //share to whatsapp
     if(actionType === 'share-whatsapp') {
         const whatsappMessage = encodeURIComponent("Check out Your Order Receipt: " + pdfUrl);
@@ -397,7 +457,7 @@ jQuery(document).ready(function($) {
             const parser = new DOMParser(),
                 dom = parser.parseFromString(partialPaymentData.settings.wepos_receipts.receipt_header, "text/html");
 
-            await generateReceiptPDF(printData, partialPaymentData.settings, actionType);
+            await generateReceiptPDF(printData, partialPaymentData.settings, partialPaymentId, actionType);
         } catch (error) {
             console.log(error);
         }
