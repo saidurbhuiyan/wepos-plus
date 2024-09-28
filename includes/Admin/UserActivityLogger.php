@@ -90,6 +90,10 @@ class UserActivityLogger {
             'export' => sanitize_text_field($_POST['_export_price']) ??'',
         ];
 
+        if (!$new_prices['regular'] && !$new_prices['sale'] && !$new_prices['local'] && !$new_prices['export']) {
+            return;
+        }
+
         // Check for price changes and log them
         $changes = [];
         foreach ($old_prices as $key => $old_price) {
