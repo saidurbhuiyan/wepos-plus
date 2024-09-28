@@ -59,7 +59,7 @@ async function createPDF(formData) {
 }
 
 // generate receipt pdf
-async function generateReceiptPDF(printdata, settings, partialPaymentId,actionType = 'generate-receipt') {
+async function generateReceiptPDF(printdata, settings, partialPaymentId,actionType = 'generate-receipt', phoneNumber = '') {
     const {jsPDF} = window.jspdf;
     const doc = new jsPDF({
         orientation: 'p',
@@ -457,7 +457,20 @@ jQuery(document).ready(function($) {
             const parser = new DOMParser(),
                 dom = parser.parseFromString(partialPaymentData.settings.wepos_receipts.receipt_header, "text/html");
 
-            await generateReceiptPDF(printData, partialPaymentData.settings, partialPaymentId, actionType);
+            let processNext = true;
+            let phoneNumber = '';
+            if (actionType === 'share-whatsapp') {
+                processNext = false;
+                const setPhoneNumber = prompt("Please enter the phone number to send the receipt to (include country code):");
+                if (setPhoneNumber) {
+                    processNext = true;
+                    phoneNumber = setPhoneNumber;
+                }
+            }
+
+            if (processNext){
+                await generateReceiptPDF(printData, partialPaymentData.settings, partialPaymentId, actionType, phoneNumber);
+         }
         } catch (error) {
             console.log(error);
         }
