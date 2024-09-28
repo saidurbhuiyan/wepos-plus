@@ -59,7 +59,7 @@ async function createPDF(formData) {
 }
 
 // generate receipt pdf
-async function generateReceiptPDF(printdata, settings, partialPaymentId,actionType = 'generate-receipt', phoneNumber = '') {
+async function generateReceiptPDF(printdata, settings, partialPaymentId,actionType = 'generate-receipt', phoneNumber = null) {
     const {jsPDF} = window.jspdf;
     const doc = new jsPDF({
         orientation: 'p',
@@ -362,6 +362,9 @@ async function generateReceiptPDF(printdata, settings, partialPaymentId,actionTy
     if(actionType === 'share-whatsapp') {
         const whatsappMessage = encodeURIComponent("Check out Your Order Receipt: " + pdfUrl);
         actionUrl = `https://api.whatsapp.com/send?text=${whatsappMessage}`;
+        if(phoneNumber && phoneNumber !== '') {
+            actionUrl += `&phone=351${phoneNumber}`;
+        }
     }
 
     if (actionType === 'share-email') {
@@ -461,10 +464,10 @@ jQuery(document).ready(function($) {
             let phoneNumber = '';
             if (actionType === 'share-whatsapp') {
                 processNext = false;
-                const setPhoneNumber = prompt("Please enter the phone number to send the receipt to (include country code):");
+                const setPhoneNumber = prompt("Please enter the portugese phone number to send the receipt to (without country code):");
                 if (setPhoneNumber) {
                     processNext = true;
-                    phoneNumber = setPhoneNumber;
+                    phoneNumber = setPhoneNumber.replaceAll(/\s/g,'');
                 }
             }
 
