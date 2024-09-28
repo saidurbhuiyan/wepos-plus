@@ -44,7 +44,7 @@
         <span>{{ totalLogs }} {{ __( 'Logs', 'wepos' ) }} </span>
         <button @click="goToPage(currentPage - 1)" :disabled="currentPage === 1">{{ __( 'Previous', 'wepos' ) }}</button>
         <span>{{ currentPage }} {{ __( 'of', 'wepos' ) }} {{ totalPages }}</span>
-        <button @click="goToPage(currentPage + 1)" :disabled="currentPage === totalPages">{{ __( 'Next', 'wepos' ) }}</button>
+        <button @click="goToPage(currentPage + 1)" :disabled="currentPage === totalPages || totalPages === 0">{{ __( 'Next', 'wepos' ) }}</button>
       </div>
 
       <div class="loading" v-if="showLoading">
@@ -87,7 +87,6 @@ export default {
       jQuery.post(wepos.ajaxurl, data, function(res) {
         if (res.success) {
           self.activityLogs = res.data.logs;
-          console.log(self.activityLogs);
           self.totalLogs = res.data.total_logs;
           self.totalPages = res.data.total_pages;
           self.nextPage = res.data.next_page;

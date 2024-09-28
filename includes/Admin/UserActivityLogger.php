@@ -30,7 +30,8 @@ class UserActivityLogger {
             wp_send_json_error(__($activity_logs['message'], 'wepos'));
         }
 
-        $total_pages = ceil($activity_logs['data']['total_logs'] / $logs_per_page);
+        $total_pages = max(1, ceil($activity_logs['data']['total_logs'] / $logs_per_page));
+
         $next_page = $current_page + 1 > $total_pages ? $total_pages : $current_page + 1;
         $prev_page = $current_page - 1 > 0 ? $current_page - 1 : 1;
 
