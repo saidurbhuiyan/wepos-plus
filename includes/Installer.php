@@ -25,6 +25,8 @@ class Installer {
         $this->add_user_roles();
         $this->flush_rewrites();
         $this->schedule_cron_jobs();
+        $this->create_partial_payment_table_if_not_exists();
+        $this->create_user_activity_log_table_if_not_exists();
     }
 
     /**
@@ -102,5 +104,23 @@ class Installer {
         // Schedule recurring cron action.
         $now = wepos_current_datetime()->modify( 'midnight' )->getTimestamp();
         WC()->queue()->schedule_cron( $now, '0 0 * * *', $hook, [], 'dokan' );
+    }
+
+    /**
+     * Create Partial Payment Table If Not Exists
+     * @return void
+     */
+    private function create_partial_payment_table_if_not_exists() {
+        //file where sql queries are used to create table
+        require_once(WEPOS_INCLUDES . '/admin/Updates/upgrade-1.3.0.php');
+    }
+
+    /**
+     * Create User Activity Log Table If Not Exists
+     * @return void
+     */
+    protected function create_user_activity_log_table_if_not_exists() {
+        //file where sql queries are used to create table
+        require_once(WEPOS_INCLUDES . '/admin/Updates/upgrade-1.3.2.php');
     }
 }

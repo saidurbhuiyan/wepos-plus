@@ -9,7 +9,7 @@ class UserActivityLogger {
     public function __construct() {
         add_action('wp_ajax_wepos_get_user_activity_logs', array($this, 'get_user_activity_logs'), 10);
         // Hook into WooCommerce product save action
-        add_action('save_post_product', [$this, 'track_product_price_change'], 10, 2);
+        add_action('save_post_product', [$this, 'track_product_price_change'], 10, 3);
     }
 
     /**
@@ -53,10 +53,19 @@ class UserActivityLogger {
      * @param WP_Post $post
      * @return void
      */
-    public function track_product_price_change($post_id, $post)
+    public function track_product_price_change($post_id, $post, $update)
     {
         // Check if this is a WooCommerce product
-        if ($post->post_type !== 'product') {
+        if ($post->post_type !== 'product' || !$update) {
+            return;
+        }
+
+        // Avoid triggering on autosaves or revisions
+        if (defined('DOING_AUTOSAVE') && DOING_AUTOSAVE) {
+            return;
+        }
+
+        if (wp_is_post_revision($post_id)) {
             return;
         }
 
@@ -68,18 +77,23 @@ class UserActivityLogger {
             'export' => get_post_meta($post_id, '_export_price', true)
         ];
 
+        if (!$old_prices['regular'] && !$old_prices['sale'] && !$old_prices['local'] && !$old_prices['export']) {
+            return;
+        }
+
         // Get new prices
         $new_prices = [
-            'regular' => $_POST['_regular_price'] ?? '',
-            'sale' => $_POST['_sale_price']?? '',
-            'local' => $_POST['_local_price']?? '',
-            'export' => $_POST['_export_price'] ??'',
+            'regular' => sanitize_text_field($_POST['_regular_price']) ?? '',
+            'sale' => sanitize_text_field($_POST['_sale_price'])?? '',
+            'local' => sanitize_text_field($_POST['_local_price'])?? '',
+            'export' => sanitize_text_field($_POST['_export_price']) ??'',
         ];
 
         // Check for price changes and log them
         $changes = [];
         foreach ($old_prices as $key => $old_price) {
             $newFormated = number_format((float)str_replace(',', '.', $new_prices[$key]), 2, '.', '');
+            $old_price = number_format((float)str_replace(',', '.', $old_price), 2, '.', '');
             if ($old_price !== $new_prices[$key] && $old_price !== $newFormated) {
                 $changes[] = "$key price of $old_price to $newFormated";
             }
