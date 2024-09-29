@@ -183,6 +183,9 @@ export default {
 
         removeCartItemQuantity( state, itemKey ) {
             var item = state.cartdata.line_items[itemKey];
+            if (item.expiry && item.expiry.reduce(( total, expiry ) => total + expiry.quantity, 0 ) >= item.quantity) {
+                return
+            }
             if ( item.quantity <= 1 ) {
                 state.cartdata.line_items[itemKey].quantity = 1;
             } else {
@@ -218,6 +221,7 @@ export default {
                 newItemQuantity = quantity - expireExistQuantity;
                 expiryExists.quantity = quantity;
             } else {
+                itemQuantity =  itemQuantity === 1 && item.expiry.length === 0 ? 0 : itemQuantity;
                 item.expiry.push({
                     date: expiryDate,
                     quantity: quantity,
