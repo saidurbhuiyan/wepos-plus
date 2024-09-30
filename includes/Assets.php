@@ -192,6 +192,13 @@ class Assets {
             wp_enqueue_style( 'wepos-frontend' );
             wp_enqueue_style( 'wepos-select2' );
 
+            add_filter('style_loader_tag', function($html, $handle) {
+                if ('wepos-frontend' === $handle || 'wepos-style' === $handle) {
+                    $html = str_replace('rel=\'stylesheet\'', 'rel=\'stylesheet\' type=\'text/css\'', $html);
+                }
+                return $html;
+            }, 10, 2);
+
             // Load scripts
             wp_enqueue_script( 'wepos-blockui' );
             wp_enqueue_script( 'wepos-accounting' );

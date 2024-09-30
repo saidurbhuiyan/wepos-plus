@@ -312,8 +312,10 @@
                 <tr v-if="item.editQuantity" class="update-quantity-wrap">
                   <td colspan="1">
                     <span class="qty">{{ __('Quantity', 'wepos') }}</span>
-                    <span class="qty-number"><input type="number" min="1" step="1" v-model="item.quantity"></span>
-                    <span class="qty-action">
+                    <span class="qty-number">
+                      <input type="number" min="1" step="1" v-model="item.quantity" :disabled="hasExtraQuantity(item)">
+                    </span>
+                    <span class="qty-action" v-if="hasExtraQuantity(item)">
                       <a href="#" class="add" @click.prevent="addQuantity( key )">&#43;</a>
                       <a href="#" class="minus" @click.prevent="removeQuantity( key )">&#45;</a>
                     </span>
@@ -499,6 +501,8 @@
 
           <div class="print-section">
             <print-receipt></print-receipt>
+            <generate-pdf-receipt :printdata="printdata"
+                                  :settings="settings" />
             <button class="new-sale-btn" @click.prevent="createNewSale()">
               <span class="icon flaticon-add"></span>
               <span class="label">{{ __('New Sale', 'wepos') }}</span>
@@ -808,6 +812,7 @@ import PrintReceipt from './PrintReceipt.vue';
 import PrintReceiptHtml from './PrintReceiptHtml.vue';
 import CustomerNote from './CustomerNote.vue';
 import VendorDropdown from "./VendorDropdown.vue";
+import GeneratePdfReceipt from "frontend/components/GeneratePdfReceipt.vue";
 
 let Modal = wepos_get_lib('Modal');
 
@@ -816,6 +821,7 @@ export default {
   name: 'Home',
 
   components: {
+    GeneratePdfReceipt,
     ProductSearch,
     CustomerSearch,
     Overlay,
@@ -1073,7 +1079,7 @@ export default {
       if (!this.$store.getters['Order/getCanProcessPayment']) {
         return;
       }
-      console.log(this.cartdata.line_items);
+
       var self = this,
           gateway = weLo_.find(this.availableGateways, {'id': this.orderdata.payment_method}),
           orderdata = wepos.hooks.applyFilters('wepos_order_form_data', {
@@ -1140,6 +1146,7 @@ export default {
 
             wepos.api.post(wepos.rest.root + wepos.rest.posversion + '/payment/process', response)
                 .done(data => {
+
                   if (data.result == 'success') {
                     this.$router.push({
                       name: 'Home',
@@ -1171,7 +1178,8 @@ export default {
                       /* partial payment */
                       dueamount: this.dueAmountPartial.toString(),
                       paymenttype: this.paymentType,
-                      vendor_type: this.selectedVendorType
+                      vendor_type: this.selectedVendorType,
+                      partial_Payment_id : data.partial_payment_stats[0]?.ID?? null,
                     }, orderdata);
 
                     $contentWrap.unblock();
@@ -1456,6 +1464,20 @@ export default {
       variationProduct.stock_expiry = this.selectedVariationProduct.meta_data.some((meta) => meta.key === '_expiry_rule' && meta.value === 'yes') ? this.selectedVariationProduct.meta_data.find((meta) => meta.key === '_expiry_data').value : null;
       this.$store.dispatch('Cart/addToCartAction', variationProduct);
     },
+
+    hasExtraQuantity(item) {
+      const quantity = item.quantity
+      const stockExpiry = item.stock_expiry || null;
+
+      if (!stockExpiry) {
+        return true
+      }
+
+      const expiryQuantity = stockExpiry.reduce((sum, data) => sum + data.quantity, 0);
+      return quantity > expiryQuantity;
+
+    },
+
     addToCart(product) {
       if (!this.hasStock(product)) {
         this.toast({
@@ -1466,9 +1488,17 @@ export default {
       }
 
       product.stock_expiry = product.meta_data.some((meta) => meta.key === '_expiry_rule' && meta.value === 'yes') ? product.meta_data.find((meta) => meta.key === '_expiry_data')?.value : null;
-
       this.$store.dispatch('Cart/addToCartAction', product);
+
+      const itemKey = this.cartdata.line_items.findIndex(item => item.product_id === product.id);
+
+      if(!this.hasExtraQuantity(product) && itemKey !== -1) {
+        const sortedDates = product.stock_expiry.sort((a, b) => new Date(a.date) - new Date(b.date));
+        this.updateExpiryQuantity(itemKey,sortedDates[0].date, 1);
+      }
+
     },
+
     toggleEditQuantity(product, key) {
       this.$store.dispatch('Cart/toggleEditQuantityAction', key);
     },

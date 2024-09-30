@@ -24,6 +24,7 @@ class WePos_API  {
     // jQuery ajax wrapper
     ajax(path, method, headers, data) {
         let override = null;
+        let isFormData = data instanceof FormData;
 
         if ( 'PUT' === method || 'DELETE' === method ) {
             override = method;
@@ -32,6 +33,8 @@ class WePos_API  {
 
         return jQuery.ajax({
             url: path,
+            processData: !isFormData,
+            contentType: isFormData ? false : 'application/x-www-form-urlencoded',
             beforeSend: function ( xhr ) {
                 xhr.setRequestHeader( 'X-WP-Nonce', window.wepos.rest.nonce );
 

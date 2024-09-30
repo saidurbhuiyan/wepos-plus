@@ -17,6 +17,7 @@
     "@wordpress/hooks": "^3.14.0",
     "chart.js": "^2.9.4",
     "dayjs": "^1.11.4",
+    "jspdf": "^2.5.2",
     "lodash": "^4.17.21",
     "v-hotkey": "^0.9.0",
     "v-tooltip": "^2.0.0-rc.33",
