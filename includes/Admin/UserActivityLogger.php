@@ -78,7 +78,7 @@ class UserActivityLogger {
             'export' => get_post_meta($post_id, '_export_price', true)
         ];
 
-        if (!$old_prices['regular'] && !$old_prices['sale'] && !$old_prices['local'] && !$old_prices['export']) {
+        if (empty($old_prices['regular']) && empty($old_prices['sale']) && empty($old_prices['local']) && empty($old_prices['export'])) {
             return;
         }
 
@@ -90,7 +90,7 @@ class UserActivityLogger {
             'export' => sanitize_text_field($_POST['_export_price']) ??'',
         ];
 
-        if (!$new_prices['regular'] && !$new_prices['sale'] && !$new_prices['local'] && !$new_prices['export']) {
+        if (empty($new_prices['regular']) && empty($new_prices['sale']) && empty($new_prices['local']) && empty($new_prices['export'])) {
             return;
         }
 
@@ -98,13 +98,13 @@ class UserActivityLogger {
         $changes = [];
         foreach ($old_prices as $key => $old_price) {
             $newFormated = number_format((float)str_replace(',', '.', $new_prices[$key]), 2, '.', '');
-            $old_price = number_format((float)str_replace(',', '.', $old_price), 2, '.', '');
-            if ($old_price !== $new_prices[$key] && $old_price !== $newFormated) {
+            $formated_old_price = number_format((float)str_replace(',', '.', $old_price), 2, '.', '');
+            if (!empty($old_price) && $old_price !== $new_prices[$key] && $formated_old_price !== $newFormated) {
                 $changes[] = "$key price of $old_price to $newFormated";
             }
         }
 
-        if ($changes) {
+        if (!empty($changes)) {
             $action_data = implode(', ', $changes);
 
             // Log the price change
