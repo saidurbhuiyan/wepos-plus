@@ -125,21 +125,28 @@ class UserActivityLogger {
 	 * @return void
 	 */
     private function send_price_change_email_to_admin($log_type, $reference_id, $action_data) {
-        // Get admin email
-        $admin_email = get_option('admin_email');
 
         // Prepare email subject and message
         $subject = ucfirst($log_type) . ' Change Notification';
         $message = sprintf(
-            'The %s of %s ID %d has been changed from %s. by %s.',
+            'The %s of %s ID %d has been changed from %s by %s.',
             ($log_type === 'product' ? 'price' : 'total'),
             $log_type,
             $reference_id,
             $action_data,
-            ucfirst(wp_get_current_user()->user_login),
+            ucfirst(esc_html(wp_get_current_user()->user_login)) // Escape user login for safety
         );
 
-        // Send email to admin
-        wp_mail($admin_email, $subject, $message);
+        // Get admin users
+        $adminUsers = get_users(array('role' => 'Administrator')); // Use array for role
+
+        // Send email to all admins
+        foreach ($adminUsers as $adminUser) {
+            $admin_email = $adminUser->user_email;
+            if (!wp_mail($admin_email, $subject, $message)) {
+                // Error logging if email fails
+                error_log('Email failed to send to ' . $admin_email);
+            }
+        }
     }
 }
