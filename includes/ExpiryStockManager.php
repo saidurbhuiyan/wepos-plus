@@ -39,13 +39,36 @@ class ExpiryStockManager
 
             // Parse each expiry entry
             foreach ($expiryData as $index => $expiry) {
-                $pairs = explode('-', $expiry);
-                foreach ($pairs as $pair) {
-                    [$key, $value] = explode(':', $pair);
-                    $key = strtolower(trim($key));
-                    $value = trim($value);
-                    $result[$index][$key] = $key === 'date' ? DateTime::createFromFormat('d/m/Y', sanitize_text_field($value) )->format('Y-m-d') : $value;
+                // Split the expiry string into date, quantity, company, and buying_price
+                $parts = explode('-', $expiry);
+                if(count($parts) !== 4) {
+                    continue;
                 }
+
+                $date = trim($parts[0]);
+                $quantity = trim($parts[1]);
+                $company = trim($parts[2]);
+                $buying_price = trim($parts[3]);
+
+                // Skip entries with empty date or quantity
+                if(empty($date) || empty($quantity)) {
+                    continue;
+                }
+
+                // Format the date to 'Y-m-d' if it's valid, otherwise skip this entry
+                $formatted_date = DateTime::createFromFormat('d/m/Y', sanitize_text_field($date));
+                if ($formatted_date === false) {
+                    continue;
+                }
+                $date = $formatted_date->format('Y-m-d');
+
+                // Store the formatted data
+                $result[$index] = [
+                    'date' => $date,
+                    'quantity' => $quantity,
+                    'company' => $company,
+                    'buying_price' => $buying_price
+                ];
             }
 
             // Update the '_expiry_data' value with the formatted result
@@ -57,6 +80,7 @@ class ExpiryStockManager
 
         return $data;
     }
+
 
 
     /**
