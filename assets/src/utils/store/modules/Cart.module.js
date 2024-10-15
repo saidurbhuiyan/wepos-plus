@@ -369,6 +369,8 @@ export default {
 
         updateCartExpiryItemQuantityAction(context, payload) {
             context.commit( 'updateCartExpiryItemQuantity', payload );
+            context.commit( 'calculateDiscount', context.getters );
+            context.commit( 'calculateFee', context.getters );
         },
 
         toggleEditQuantityAction( context, itemKey ) {

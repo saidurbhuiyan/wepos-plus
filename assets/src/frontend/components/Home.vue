@@ -290,7 +290,8 @@
                           style="display: flex; width: 100%; margin: 4px; text-align: center; align-items: center;"
                       >
                         <span class="qty" style="flex: 1;">{{ expiry.date }}</span>
-                        <span class="qty-number" style="flex: 1;">
+                        <span class="number-input qty-number">
+                          <button @click.prevent="(e)=> handleExpireQuantityOnClick(e, 'down')" ></button>
       <input
           type="number"
           min="1"
@@ -300,6 +301,7 @@
           @input="(e) => e.target.value = handleExpireQuantityInput(e.target.value, e.target.min, e.target.max)"
           @change="(e) => updateExpiryQuantity(key, expiry.date, e.target.value)"
       >
+                          <button @click.prevent="(e) => handleExpireQuantityOnClick(e, 'up')" class="plus" ></button>
     </span>
                         <span class="qty-action" style="flex: 1; text-align: center;">
                           <span class="remove-expiry flaticon-cancel-music" @click.prevent="() => updateExpiryQuantity(key, expiry.date, 0)"></span></span>
@@ -310,17 +312,17 @@
                 </tr>
 
                 <tr v-if="item.editQuantity" class="update-quantity-wrap">
-                  <td colspan="1">
+                  <td colspan="1" v-if="!hasExpiryQuantity(item)">
                     <span class="qty">{{ __('Quantity', 'wepos') }}</span>
                     <span class="qty-number">
-                      <input type="number" min="1" step="1" v-model="item.quantity" :disabled="hasExtraQuantity(item)">
+                      <input type="number" min="1" step="1" v-model="item.quantity" :disabled="true">
                     </span>
-                    <span class="qty-action" v-if="hasExtraQuantity(item)">
+                    <span class="qty-action">
                       <a href="#" class="add" @click.prevent="addQuantity( key )">&#43;</a>
                       <a href="#" class="minus" @click.prevent="removeQuantity( key )">&#45;</a>
                     </span>
                   </td>
-                  <td colspan="4" style="text-align: center;">
+                  <td :colspan="hasExpiryQuantity(item) ? 5 : 4" :style="hasExpiryQuantity(item) ? '' : 'text-align: center;'">
                     <template v-if="!hasProductDiscount(item.product_id)">
                       <span class="qty">{{ __('Discount per Quantity', 'wepos') }}</span>
                       <span class="input-addon">
@@ -998,6 +1000,14 @@ export default {
       return !value || parseInt(value)<= parseInt(max) ? (!value ||parseInt(value ) >= parseInt(min)? value : min) : max;
     },
 
+    handleExpireQuantityOnClick(event, type = 'up') {
+      const input = event.target.parentNode.querySelector('input[type=number]');
+      if(!input) return;
+      type === 'up' ? input.stepUp() : input.stepDown()
+      input.dispatchEvent(new Event('change'))
+
+    },
+
     setVendorTypeFromUrl(vendorType = 'regular') {
       const urlParams = this.$route.query;
       if(urlParams.vendor_type && urlParams.vendor_type !== vendorType && urlParams.vendor_type !== this.selectedVendorType) {
@@ -1465,17 +1475,8 @@ export default {
       this.$store.dispatch('Cart/addToCartAction', variationProduct);
     },
 
-    hasExtraQuantity(item) {
-      const quantity = item.quantity
-      const stockExpiry = item.stock_expiry || null;
-
-      if (!stockExpiry) {
-        return true
-      }
-
-      const expiryQuantity = stockExpiry.reduce((sum, data) => sum + data.quantity, 0);
-      return quantity > expiryQuantity;
-
+    hasExpiryQuantity(item) {
+      return item.stock_expiry && item.stock_expiry.length > 0
     },
 
     addToCart(product) {
@@ -1492,7 +1493,7 @@ export default {
 
       const itemKey = this.cartdata.line_items.findIndex(item => item.product_id === product.id);
 
-      if(!this.hasExtraQuantity(product) && itemKey !== -1) {
+      if(this.hasExpiryQuantity(product) && itemKey !== -1) {
         const sortedDates = product.stock_expiry.sort((a, b) => new Date(a.date) - new Date(b.date));
         this.updateExpiryQuantity(itemKey,sortedDates[0].date, 1);
       }
@@ -2901,6 +2902,53 @@ export default {
                       &::-webkit-outer-spin-button {
                         -webkit-appearance: none;
                         margin: 0;
+                      }
+                    }
+                    &.number-input {
+                      border: 1px solid #eceef0;
+                      display: inline-flex;
+                    }
+
+                    &.number-input,
+                    &.number-input * {
+                      box-sizing: border-box;
+                    }
+
+                    &.number-input{
+
+                      button {
+                        outline:none;
+                        -webkit-appearance: none;
+                        background-color: white;
+                        border: none;
+                        align-items: center;
+                        justify-content: center;
+                        width: 25px;
+                        height: 23px;
+                        cursor: pointer;
+                        margin: 0;
+                        position: relative;
+                      }
+                      button:before,
+                      button:after{
+                        display: inline-block;
+                        position: absolute;
+                        content: '';
+                        width: 0.8rem;
+                        height: 1.5px;
+                        background-color: #212121;
+                        transform: translate(-50%, -50%);
+                      }
+                      input[type=number] {
+                        font-family: sans-serif;
+                        border: solid #eceef0;
+                        border-width: 0 1px;
+                        text-align: center;
+                        margin: 0;
+                      }
+
+                      button.plus:after {
+                        transform: translate(-50%, -50%) rotate(90deg);
                       }
                     }
 
