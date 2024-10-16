@@ -7,8 +7,8 @@ use DateTime;
 class ExpiryStockManager
 {
     public function __construct() {
-        add_action('woocommerce_product_options_inventory_product_data', [$this, 'add_expiry_rule_field']);
-        add_action('woocommerce_process_product_meta', [$this, 'save_expiry_fields']);
+        add_action('woocommerce_product_options_inventory_product_data', [$this, 'add_quantity_per_box_and_expiry_rule_fields']);
+        add_action('woocommerce_process_product_meta', [$this, 'save_quantity_per_box_and_expiry_fields']);
         add_action('admin_enqueue_scripts', [$this, 'enqueue_admin_scripts']);
 	    // Admin Columns and Quick Edit
 	    add_filter( 'manage_product_posts_columns', [$this, 'product_column_head'],11);
@@ -131,8 +131,29 @@ class ExpiryStockManager
 	/**
 	 * Add Expiry Rule Field
 	 **/
-    public function add_expiry_rule_field() {
+    public function add_quantity_per_box_and_expiry_rule_fields() {
 
+        // Quantity Per Box Field
+        $quantity_per_box = get_post_meta( get_the_ID(), '_quantity_per_box', true );
+        echo '<div class="options_group">';
+
+        woocommerce_wp_text_input(
+            array(
+                'id'                => '_quantity_per_box',
+                'value'             =>  $quantity_per_box ?? 0,
+                'label'             => __( 'Quantity Per Box', 'woocommerce' ),
+                'desc_tip'          => true,
+                'description'       => __( 'Total quantity of product per box.', 'wepos' ),
+                'type'              => 'number',
+                'custom_attributes' => array(
+                    'step' => 'any',
+                ),
+            )
+        );
+
+        echo '</div>';
+
+        // Expiry Rule Field
         $expiry_dates = get_post_meta( get_the_ID(), '_expiry_data', true );
         $expiry_rule = get_post_meta( get_the_ID(), '_expiry_rule', true );
         $manage_stock = get_post_meta( get_the_ID(), '_manage_stock', true );
@@ -146,14 +167,13 @@ class ExpiryStockManager
                 'yes' => __('Yes', 'wepos'),
             ],
             'desc_tip' => true,
-            'description' => __('manage stock has to enable and stock quantity has to be greater than 0. expiry fully based on manage stock and stock quantity.', 'wepos'),
+            'description' => __('If you choose expiry rule yes, manage stock will be enabled and quantity will be based on total expiry quantity.', 'wepos'),
             'value' => $manage_stock === 'yes' ? $expiry_rule : 'no',
 
         ]);
 
         // Placeholder for Expiry Date and Quantity Fields
         echo '<div id="expiry_date_fields" ' . ($expiry_rule === 'yes' && $manage_stock === 'yes' ? '' : 'style="display: none;"') . '>
-       <p class="available_stock_label">Available Quantity: <span id="available_stock_expiry" class="available_expiry"></span></p>
        <table class="expiry-table">
        <thead>
        <tr class="expiry_label"> 
@@ -200,7 +220,13 @@ class ExpiryStockManager
      * Save Expiry Rule and Related Fields
      * @param int $post_id
      **/
-    public function save_expiry_fields($post_id) {
+    public function save_quantity_per_box_and_expiry_fields($post_id) {
+
+        // Quantity Per Box
+        $quantity_per_box = isset($_POST['_quantity_per_box']) ? sanitize_text_field($_POST['_quantity_per_box']) : 0;
+        update_post_meta($post_id, '_quantity_per_box', $quantity_per_box);
+
+        // Expiry Rule
         $expiry_rule = isset($_POST['_expiry_rule']) ? sanitize_text_field($_POST['_expiry_rule']) : 'no';
         update_post_meta($post_id, '_expiry_rule', $expiry_rule);
 

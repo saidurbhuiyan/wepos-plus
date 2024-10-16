@@ -4,7 +4,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: wePOSPlus - Point Of Sale (POS) for WooCommerce 1.3.2\n"
 "Report-Msgid-Bugs-To: https://wordpress.org/support/plugin/wepos-plus\n"
-"POT-Creation-Date: 2024-10-16 02:37:36+00:00\n"
+"POT-Creation-Date: 2024-10-16 04:34:39+00:00\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
@@ -79,7 +79,7 @@ msgid "Details"
 msgstr ""
 
 #: assets/src/admin/components/UserActivity.vue:26
-#: assets/src/frontend/components/Home.vue:281 languages/wepos.php:45
+#: assets/src/frontend/components/Home.vue:292 languages/wepos.php:45
 msgid "Date"
 msgstr ""
 
@@ -183,283 +183,288 @@ msgstr ""
 msgid "Not found"
 msgstr ""
 
-#: assets/src/frontend/components/Home.vue:81 languages/wepos.php:33
+#: assets/src/frontend/components/Home.vue:84 languages/wepos.php:33
 msgid "Sku :"
 msgstr ""
 
-#: assets/src/frontend/components/Home.vue:85
-#: assets/src/frontend/components/Home.vue:114 languages/wepos.php:34
+#: assets/src/frontend/components/Home.vue:88
+#: assets/src/frontend/components/Home.vue:121 languages/wepos.php:34
 msgid "Price :"
 msgstr ""
 
-#: assets/src/frontend/components/Home.vue:89
-#: assets/src/frontend/components/Home.vue:118
+#: assets/src/frontend/components/Home.vue:92
+#: assets/src/frontend/components/Home.vue:125
 msgid "Stock :"
 msgstr ""
 
-#: assets/src/frontend/components/Home.vue:128
+#: assets/src/frontend/components/Home.vue:96
+#: assets/src/frontend/components/Home.vue:129
+msgid "Per Box :"
+msgstr ""
+
+#: assets/src/frontend/components/Home.vue:139
 #: assets/src/frontend/components/ProductSearch.vue:50 languages/wepos.php:35
 msgid "Select Variations"
 msgstr ""
 
-#: assets/src/frontend/components/Home.vue:149
+#: assets/src/frontend/components/Home.vue:160
 #: assets/src/frontend/components/ProductSearch.vue:70 languages/wepos.php:36
 msgid "Add Product"
 msgstr ""
 
-#: assets/src/frontend/components/Home.vue:158 languages/wepos.php:37
+#: assets/src/frontend/components/Home.vue:169 languages/wepos.php:37
 msgid "No Product Found"
 msgstr ""
 
-#: assets/src/frontend/components/Home.vue:184
-#: assets/src/frontend/components/Home.vue:342 languages/wepos.php:38
+#: assets/src/frontend/components/Home.vue:195
+#: assets/src/frontend/components/Home.vue:353 languages/wepos.php:38
 msgid "Empty Cart"
 msgstr ""
 
-#: assets/src/frontend/components/Home.vue:189 languages/wepos.php:39
+#: assets/src/frontend/components/Home.vue:200 languages/wepos.php:39
 msgid "Help"
 msgstr ""
 
-#: assets/src/frontend/components/Home.vue:197 languages/wepos.php:40
+#: assets/src/frontend/components/Home.vue:208 languages/wepos.php:40
 msgid "Logout"
 msgstr ""
 
-#: assets/src/frontend/components/Home.vue:214 languages/wepos.php:41
+#: assets/src/frontend/components/Home.vue:225 languages/wepos.php:41
 msgid "Product"
 msgstr ""
 
-#: assets/src/frontend/components/Home.vue:215 languages/wepos.php:42
+#: assets/src/frontend/components/Home.vue:226 languages/wepos.php:42
 msgid "Qty"
 msgstr ""
 
-#: assets/src/frontend/components/Home.vue:216 languages/wepos.php:43
+#: assets/src/frontend/components/Home.vue:227 languages/wepos.php:43
 msgid "Price"
 msgstr ""
 
-#: assets/src/frontend/components/Home.vue:266
-#: includes/ExpiryStockManager.php:240 languages/wepos.php:44
+#: assets/src/frontend/components/Home.vue:277
+#: includes/ExpiryStockManager.php:266 languages/wepos.php:44
 msgid "Expiry"
 msgstr ""
 
-#: assets/src/frontend/components/Home.vue:282
-#: assets/src/frontend/components/Home.vue:316 languages/wepos.php:46
+#: assets/src/frontend/components/Home.vue:293
+#: assets/src/frontend/components/Home.vue:327 languages/wepos.php:46
 msgid "Quantity"
 msgstr ""
 
-#: assets/src/frontend/components/Home.vue:283 languages/wepos.php:47
+#: assets/src/frontend/components/Home.vue:294 languages/wepos.php:47
 msgid "Action"
 msgstr ""
 
-#: assets/src/frontend/components/Home.vue:327 languages/wepos.php:48
+#: assets/src/frontend/components/Home.vue:338 languages/wepos.php:48
 msgid "Discount per Quantity"
 msgstr ""
 
-#: assets/src/frontend/components/Home.vue:355
-#: assets/src/frontend/components/Home.vue:646
+#: assets/src/frontend/components/Home.vue:366
+#: assets/src/frontend/components/Home.vue:657
 #: assets/src/frontend/components/PrintReceiptHtml.vue:82
 #: languages/wepos.php:49
 msgid "Subtotal"
 msgstr ""
 
-#: assets/src/frontend/components/Home.vue:358
-#: assets/src/frontend/components/Home.vue:648
+#: assets/src/frontend/components/Home.vue:369
+#: assets/src/frontend/components/Home.vue:659
 #: assets/src/frontend/components/PrintReceiptHtml.vue:84
 #: languages/wepos.php:50
 msgid "Including Tax"
 msgstr ""
 
-#: assets/src/frontend/components/Home.vue:367
-#: assets/src/frontend/components/Home.vue:375
-#: assets/src/frontend/components/Home.vue:421
-#: assets/src/frontend/components/Home.vue:472
-#: assets/src/frontend/components/Home.vue:656
-#: assets/src/frontend/components/Home.vue:661
-#: assets/src/frontend/components/Home.vue:678
-#: assets/src/frontend/components/Home.vue:1343
+#: assets/src/frontend/components/Home.vue:378
+#: assets/src/frontend/components/Home.vue:386
+#: assets/src/frontend/components/Home.vue:432
+#: assets/src/frontend/components/Home.vue:483
+#: assets/src/frontend/components/Home.vue:667
+#: assets/src/frontend/components/Home.vue:672
+#: assets/src/frontend/components/Home.vue:689
+#: assets/src/frontend/components/Home.vue:1358
 #: assets/src/frontend/components/PrintReceiptHtml.vue:90
 #: assets/src/frontend/components/PrintReceiptHtml.vue:94
 #: languages/wepos.php:51
 msgid "Discount"
 msgstr ""
 
-#: assets/src/frontend/components/Home.vue:385
-#: assets/src/frontend/components/Home.vue:431 languages/wepos.php:52
+#: assets/src/frontend/components/Home.vue:396
+#: assets/src/frontend/components/Home.vue:442 languages/wepos.php:52
 msgid "Fee Name"
 msgstr ""
 
-#: assets/src/frontend/components/Home.vue:387
-#: assets/src/frontend/components/Home.vue:433 languages/wepos.php:53
+#: assets/src/frontend/components/Home.vue:398
+#: assets/src/frontend/components/Home.vue:444 languages/wepos.php:53
 msgid "Total"
 msgstr ""
 
-#: assets/src/frontend/components/Home.vue:391
-#: assets/src/frontend/components/Home.vue:437 languages/wepos.php:54
+#: assets/src/frontend/components/Home.vue:402
+#: assets/src/frontend/components/Home.vue:448 languages/wepos.php:54
 msgid "Taxable"
 msgstr ""
 
-#: assets/src/frontend/components/Home.vue:401
-#: assets/src/frontend/components/Home.vue:447 languages/wepos.php:55
+#: assets/src/frontend/components/Home.vue:412
+#: assets/src/frontend/components/Home.vue:458 languages/wepos.php:55
 msgid "Apply"
 msgstr ""
 
-#: assets/src/frontend/components/Home.vue:404
-#: assets/src/frontend/components/Home.vue:450 languages/wepos.php:56
+#: assets/src/frontend/components/Home.vue:415
+#: assets/src/frontend/components/Home.vue:461 languages/wepos.php:56
 msgid "Cancel"
 msgstr ""
 
-#: assets/src/frontend/components/Home.vue:409
-#: assets/src/frontend/components/Home.vue:455
-#: assets/src/frontend/components/Home.vue:474
-#: assets/src/frontend/components/Home.vue:667
-#: assets/src/frontend/components/Home.vue:684
-#: assets/src/frontend/components/Home.vue:1365
+#: assets/src/frontend/components/Home.vue:420
+#: assets/src/frontend/components/Home.vue:466
+#: assets/src/frontend/components/Home.vue:485
+#: assets/src/frontend/components/Home.vue:678
+#: assets/src/frontend/components/Home.vue:695
+#: assets/src/frontend/components/Home.vue:1380
 #: assets/src/frontend/components/PrintReceiptHtml.vue:98
 #: languages/wepos.php:57
 msgid "Fee"
 msgstr ""
 
-#: assets/src/frontend/components/Home.vue:465
+#: assets/src/frontend/components/Home.vue:476
 #: assets/src/frontend/components/PrintReceiptHtml.vue:102
 #: languages/wepos.php:58
 msgid "Fee Tax"
 msgstr ""
 
-#: assets/src/frontend/components/Home.vue:465
-#: assets/src/frontend/components/Home.vue:692
+#: assets/src/frontend/components/Home.vue:476
+#: assets/src/frontend/components/Home.vue:703
 #: assets/src/frontend/components/PrintReceiptHtml.vue:102
 #: languages/wepos.php:59
 msgid "Tax"
 msgstr ""
 
-#: assets/src/frontend/components/Home.vue:485 languages/wepos.php:60
+#: assets/src/frontend/components/Home.vue:496 languages/wepos.php:60
 msgid "Pay Now"
 msgstr ""
 
-#: assets/src/frontend/components/Home.vue:501 languages/wepos.php:61
+#: assets/src/frontend/components/Home.vue:512 languages/wepos.php:61
 msgid "Sale Completed"
 msgstr ""
 
-#: assets/src/frontend/components/Home.vue:510 languages/wepos.php:62
+#: assets/src/frontend/components/Home.vue:521 languages/wepos.php:62
 msgid "New Sale"
 msgstr ""
 
-#: assets/src/frontend/components/Home.vue:520 languages/wepos.php:63
+#: assets/src/frontend/components/Home.vue:531 languages/wepos.php:63
 msgid "Shortcut Keys"
 msgstr ""
 
-#: assets/src/frontend/components/Home.vue:524 languages/wepos.php:64
+#: assets/src/frontend/components/Home.vue:535 languages/wepos.php:64
 msgid "Search Product"
 msgstr ""
 
-#: assets/src/frontend/components/Home.vue:528 languages/wepos.php:65
+#: assets/src/frontend/components/Home.vue:539 languages/wepos.php:65
 msgid "Scan Product"
 msgstr ""
 
-#: assets/src/frontend/components/Home.vue:532 languages/wepos.php:66
+#: assets/src/frontend/components/Home.vue:543 languages/wepos.php:66
 msgid "Toggle Product View"
 msgstr ""
 
-#: assets/src/frontend/components/Home.vue:536 languages/wepos.php:67
+#: assets/src/frontend/components/Home.vue:547 languages/wepos.php:67
 msgid "Add Fee in cart"
 msgstr ""
 
-#: assets/src/frontend/components/Home.vue:540 languages/wepos.php:68
+#: assets/src/frontend/components/Home.vue:551 languages/wepos.php:68
 msgid "Add Discount in cart"
 msgstr ""
 
-#: assets/src/frontend/components/Home.vue:544 languages/wepos.php:69
+#: assets/src/frontend/components/Home.vue:555 languages/wepos.php:69
 msgid "Add Customer note"
 msgstr ""
 
-#: assets/src/frontend/components/Home.vue:548 languages/wepos.php:70
+#: assets/src/frontend/components/Home.vue:559 languages/wepos.php:70
 msgid "Customer Search"
 msgstr ""
 
-#: assets/src/frontend/components/Home.vue:552 languages/wepos.php:71
+#: assets/src/frontend/components/Home.vue:563 languages/wepos.php:71
 msgid "Add new Customer"
 msgstr ""
 
-#: assets/src/frontend/components/Home.vue:556 languages/wepos.php:72
+#: assets/src/frontend/components/Home.vue:567 languages/wepos.php:72
 msgid "Create New Sale"
 msgstr ""
 
-#: assets/src/frontend/components/Home.vue:560 languages/wepos.php:73
+#: assets/src/frontend/components/Home.vue:571 languages/wepos.php:73
 msgid "Empty your cart"
 msgstr ""
 
-#: assets/src/frontend/components/Home.vue:564 languages/wepos.php:74
+#: assets/src/frontend/components/Home.vue:575 languages/wepos.php:74
 msgid "Go to payment receipt"
 msgstr ""
 
-#: assets/src/frontend/components/Home.vue:568
-#: assets/src/frontend/components/Home.vue:782 languages/wepos.php:75
+#: assets/src/frontend/components/Home.vue:579
+#: assets/src/frontend/components/Home.vue:793 languages/wepos.php:75
 msgid "Process Payment"
 msgstr ""
 
-#: assets/src/frontend/components/Home.vue:572
+#: assets/src/frontend/components/Home.vue:583
 #: assets/src/frontend/components/PrintReceipt.vue:5 languages/wepos.php:76
 msgid "Print Receipt"
 msgstr ""
 
-#: assets/src/frontend/components/Home.vue:576 languages/wepos.php:77
+#: assets/src/frontend/components/Home.vue:587 languages/wepos.php:77
 msgid "Show/Close(Toggle) Help"
 msgstr ""
 
-#: assets/src/frontend/components/Home.vue:580 languages/wepos.php:78
+#: assets/src/frontend/components/Home.vue:591 languages/wepos.php:78
 msgid "Close anything"
 msgstr ""
 
-#: assets/src/frontend/components/Home.vue:593 languages/wepos.php:79
+#: assets/src/frontend/components/Home.vue:604 languages/wepos.php:79
 msgid "Sale Summary"
 msgstr ""
 
-#: assets/src/frontend/components/Home.vue:612 languages/wepos.php:80
+#: assets/src/frontend/components/Home.vue:623 languages/wepos.php:80
 msgid "Expiry :"
 msgstr ""
 
-#: assets/src/frontend/components/Home.vue:696
+#: assets/src/frontend/components/Home.vue:707
 #: assets/src/frontend/components/PrintReceiptHtml.vue:106
 #: languages/wepos.php:81
 msgid "Order Total"
 msgstr ""
 
-#: assets/src/frontend/components/Home.vue:700
-#: assets/src/frontend/components/Home.vue:708 languages/wepos.php:82
+#: assets/src/frontend/components/Home.vue:711
+#: assets/src/frontend/components/Home.vue:719 languages/wepos.php:82
 msgid "Pay"
 msgstr ""
 
-#: assets/src/frontend/components/Home.vue:729 languages/wepos.php:83
+#: assets/src/frontend/components/Home.vue:740 languages/wepos.php:83
 msgid "No gateway found"
 msgstr ""
 
-#: assets/src/frontend/components/Home.vue:752 includes/Gateways/Cash.php:33
+#: assets/src/frontend/components/Home.vue:763 includes/Gateways/Cash.php:33
 #: includes/Gateways/Cash.php:55 languages/wepos.php:84
 msgid "Cash"
 msgstr ""
 
-#: assets/src/frontend/components/Home.vue:760 languages/wepos.php:85
+#: assets/src/frontend/components/Home.vue:771 languages/wepos.php:85
 msgid "Due money"
 msgstr ""
 
-#: assets/src/frontend/components/Home.vue:763 languages/wepos.php:86
+#: assets/src/frontend/components/Home.vue:774 languages/wepos.php:86
 msgid "Change money"
 msgstr ""
 
-#: assets/src/frontend/components/Home.vue:779 languages/wepos.php:87
+#: assets/src/frontend/components/Home.vue:790 languages/wepos.php:87
 msgid "Back to Sale"
 msgstr ""
 
-#: assets/src/frontend/components/Home.vue:975
-#: assets/src/frontend/components/Home.vue:1589
-#: assets/src/frontend/components/Home.vue:1617 languages/wepos.php:88
+#: assets/src/frontend/components/Home.vue:986
+#: assets/src/frontend/components/Home.vue:1604
+#: assets/src/frontend/components/Home.vue:1632 languages/wepos.php:88
 msgid "All categories"
 msgstr ""
 
-#: assets/src/frontend/components/Home.vue:1463 languages/wepos.php:89
+#: assets/src/frontend/components/Home.vue:1478 languages/wepos.php:89
 msgid "This product is out of stock."
 msgstr ""
 
-#: assets/src/frontend/components/Home.vue:1485 languages/wepos.php:90
+#: assets/src/frontend/components/Home.vue:1500 languages/wepos.php:90
 msgid "Product is out of stock!"
 msgstr ""
 
@@ -665,31 +670,39 @@ msgstr ""
 msgid "Show POS menu in vendor dashboard"
 msgstr ""
 
-#: includes/Dokan.php:159 includes/ExpiryStockManager.php:146
+#: includes/Dokan.php:159 includes/ExpiryStockManager.php:167
 #: includes/functions.php:187 includes/functions.php:211
 msgid "Yes"
 msgstr ""
 
-#: includes/Dokan.php:160 includes/ExpiryStockManager.php:145
+#: includes/Dokan.php:160 includes/ExpiryStockManager.php:166
 #: includes/functions.php:188 includes/functions.php:212
 msgid "No"
 msgstr ""
 
-#: includes/ExpiryStockManager.php:143
+#: includes/ExpiryStockManager.php:144
+msgid "Quantity Per Box"
+msgstr ""
+
+#: includes/ExpiryStockManager.php:146
+msgid "Total quantity of product per box."
+msgstr ""
+
+#: includes/ExpiryStockManager.php:164
 msgid "Expiry Rule"
 msgstr ""
 
-#: includes/ExpiryStockManager.php:149
+#: includes/ExpiryStockManager.php:170
 msgid ""
-"manage stock has to enable and stock quantity has to be greater than 0. "
-"expiry fully based on manage stock and stock quantity."
+"If you choose expiry rule yes, manage stock will be enabled and quantity "
+"will be based on total expiry quantity."
 msgstr ""
 
-#: includes/ExpiryStockManager.php:245
+#: includes/ExpiryStockManager.php:271
 msgid "Local Price"
 msgstr ""
 
-#: includes/ExpiryStockManager.php:246
+#: includes/ExpiryStockManager.php:272
 msgid "Export Price"
 msgstr ""
 

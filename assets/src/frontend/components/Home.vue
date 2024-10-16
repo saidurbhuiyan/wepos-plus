@@ -67,6 +67,9 @@
                 <div class="img">
                   <img :src="getProductImage(product)" :alt="getProductImageName( product )">
                 </div>
+                <div v-if="productView === 'grid' && quantityPerBox(product) > 0" class="per-box">
+                  <span>{{__('1X'+ quantityPerBox(product), 'wepos')}}</span>
+                </div>
                 <div v-if="productView === 'grid'" class="stock-status">
                   <span v-html="getProductStockStatus(product)"></span>
                 </div>
@@ -88,6 +91,10 @@
                     <li>
                       <span class="label">{{ __('Stock :', 'wepos') }}</span>
                       <span class="value" v-html="getProductStockStatus(product)"></span>
+                    </li>
+                    <li v-if="quantityPerBox(product) > 0">
+                      <span class="label">{{ __('Per Box :', 'wepos') }}</span>
+                      <span class="value">{{__(quantityPerBox(product) + ' pcs', 'wepos')}}</span>
                     </li>
                   </ul>
                 </div>
@@ -117,6 +124,10 @@
                       <li>
                         <span class="label">{{ __('Stock :', 'wepos') }}</span>
                         <span class="value" v-html="getProductStockStatus(product)"></span>
+                      </li>
+                      <li v-if="quantityPerBox(product) > 0">
+                        <span class="label">{{ __('Per Box :', 'wepos') }}</span>
+                        <span class="value">{{__(quantityPerBox(product) + ' pcs', 'wepos')}}</span>
                       </li>
                     </ul>
 
@@ -1006,6 +1017,10 @@ export default {
       type === 'up' ? input.stepUp() : input.stepDown()
       input.dispatchEvent(new Event('change'))
 
+    },
+
+    quantityPerBox(product) {
+      return parseInt(product.meta_data.find((meta) => meta.key === '_quantity_per_box')?.value ?? 0);
     },
 
     setVendorTypeFromUrl(vendorType = 'regular') {
@@ -2058,6 +2073,18 @@ export default {
             &:focus {
               outline: none;
               -webkit-appearance: none
+            }
+
+            .per-box{
+              position: absolute;
+              top: 0;
+              left: 0;
+              background: #F6F7FB;
+              padding: 1px 2px;
+              color: #999DAC;
+              font-size: 11px;
+              border-bottom-left-radius: 3px;
+              border: 1px solid #E9EDF0;
             }
 
             .stock-status {

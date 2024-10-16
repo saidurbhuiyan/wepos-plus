@@ -44,6 +44,7 @@ return [
 	__( 'Sku :', 'wepos' ),
 	__( 'Price :', 'wepos' ),
 	__( 'Stock :', 'wepos' ),
+	__( 'Per Box :', 'wepos' ),
 	__( 'Select Variations', 'wepos' ),
 	__( 'Add Product', 'wepos' ),
 	__( 'No Product Found', 'wepos' ),
