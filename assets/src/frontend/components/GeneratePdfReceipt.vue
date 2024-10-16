@@ -1,6 +1,6 @@
 <template>
-  <button class="pdf-btn" @click.prevent="handleReceiptClick()">
-    <span class="label">{{ __( 'Share To Whatsapp', 'wepos' ) }}</span>
+  <button class="pdf-btn" @click.prevent="handleReceiptClick()" :disabled="generating">
+    <span class="label">{{ __( generating ? 'Generating PDF...' : 'Share To Whatsapp', 'wepos' ) }}</span>
   </button>
 </template>
 
@@ -24,6 +24,12 @@ export default {
         return {};
       }
     }
+  },
+
+  data() {
+    return {
+      generating : false
+    };
   },
 
   methods: {
@@ -365,36 +371,48 @@ export default {
       const whatsappMessage = encodeURIComponent("Check out Your Order Receipt: " + pdfUrl);
       actionUrl = `https://api.whatsapp.com/send?text=${whatsappMessage}`;
       if(phoneNumber && phoneNumber !== '') {
-        actionUrl += `&phone=351${phoneNumber}`;
+        actionUrl += `&phone=${phoneNumber}`;
       }
 
     // Open PDF in new tab in preferred action
     window.open(actionUrl, "_blank");
   },
 
-  async handleReceiptClick() {
+    async handleReceiptClick() {
+        this.generating = true;
+        let phoneNumber = this.printdata.billing.phone ?? '';
+        let setPhoneNumber = '';
 
-    let processNext = true;
-    let phoneNumber = '';
-      processNext = false;
-      const setPhoneNumber = prompt("Please enter the portugese phone number to send the receipt to (without country code):");
-      if (setPhoneNumber) {
-        processNext = true;
-        phoneNumber = setPhoneNumber.replaceAll(/\s/g,'');
-      }
+        if (phoneNumber === '') {
+          setPhoneNumber = prompt("Please enter the phone number with country code(+351) to send the receipt to (with country code):");
+        }
 
-    if (processNext){
-      await this.generateReceiptPDF(this.printdata, this.settings, phoneNumber);
+        if (setPhoneNumber) {
+          phoneNumber = setPhoneNumber.replaceAll(/\s/g, '');
+        }
+
+        if (phoneNumber !== '') {
+          phoneNumber = phoneNumber.replaceAll('+', '');
+          await this.generateReceiptPDF(this.printdata, this.settings, phoneNumber);  // Make sure to await the PDF generation process
+        }
+
+        this.generating = false;
     }
-  },
-}
+  }
 }
 </script>
 
 <style scoped lang="less">
 .pdf-btn{
-  background: #1ABC9C ;
-  border: 1px solid #1ABC9C;
-  margin: 10px !important;
+  background: #16A085;
+  border: 1px solid #16A085;
+  margin: 4px !important;
+
+}
+
+.pdf-btn:disabled {
+  background: #38c8ac;
+  border: 1px solid #38c8ac;
+  cursor: progress;
 }
 </style>

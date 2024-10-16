@@ -39,7 +39,6 @@ return [
 	__( 'New customer created', 'wepos' ),
 	__( 'Please enter an email address for customer', 'wepos' ),
 	__( 'Add', 'wepos' ),
-	__( 'Share To Whatsapp', 'wepos' ),
 	__( 'Select a category', 'wepos' ),
 	__( 'Not found', 'wepos' ),
 	__( 'Sku :', 'wepos' ),
