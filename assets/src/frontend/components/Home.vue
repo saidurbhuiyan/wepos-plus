@@ -68,7 +68,7 @@
                   <img :src="getProductImage(product)" :alt="getProductImageName( product )">
                 </div>
                 <div v-if="productView === 'grid' && quantityPerBox(product) > 0" class="per-box">
-                  <span>{{__('1X'+ quantityPerBox(product), 'wepos')}}</span>
+                  <span>{{__(quantityPerBox(product) + 'X1', 'wepos')}}</span>
                 </div>
                 <div v-if="productView === 'grid'" class="stock-status">
                   <span v-html="getProductStockStatus(product)"></span>
@@ -1222,8 +1222,18 @@ export default {
     },
 
     initPayment() {
+
       if (this.$store.state.Cart.cartdata.line_items.length <= 0) {
         return;
+      }
+
+      const hasEmptyQuantity = this.$store.state.Cart.cartdata.line_items.some((item) => item.quantity === 0);
+      if(hasEmptyQuantity) {
+        this.toast({
+          title: this.__('Please remove empty items from the cart and try again.', 'wepos'),
+          type: 'error',
+        });
+        return
       }
 
       this.showModal = true;
