@@ -138,11 +138,16 @@ class PartialPayment
 								<?php echo esc_html(date_i18n(get_option('date_format') ?? 'Y-m-d', strtotime($stat->date_created))); ?>
                             </td>
                             <td class="column-receipt" style="text-align: center;">
+                                <span id="generating-receipt" style="display: none">
+                                    <button class="woocommerce-Button button" disabled> Generating Receipt...</button>
+                                </span>
+                                <span id="receipt-actions">
                                 <a class="partial-receipt text-primary" href="#" data-date-partial-paid="<?php echo date_i18n(get_option('date_format') ?? 'Y-m-d', strtotime($stat->date_created)); ?>" data-partial-paid="<?php echo $total_paid; ?>" data-partial-paid-amount="<?php echo $stat->paid; ?>" data-partial-due="<?php echo $due > 0 ? $due : 0; ?>" data-partial-payment-id="<?php echo $stat->ID; ?>" data-action-type="generate-receipt"><span class="dashicons dashicons-media-document"></span></a>
 
                                 <a class="partial-receipt text-success" href="#" data-date-partial-paid="<?php echo date_i18n(get_option('date_format') ?? 'Y-m-d', strtotime($stat->date_created)); ?>" data-partial-paid="<?php echo $total_paid; ?>" data-partial-paid-amount="<?php echo $stat->paid; ?>" data-partial-due="<?php echo $due > 0 ? $due : 0; ?>" data-partial-payment-id="<?php echo $stat->ID; ?>" data-action-type="share-whatsapp"><span class="dashicons dashicons-whatsapp"></span></a>
 
                                 <a class="partial-receipt text-info" href="#" data-date-partial-paid="<?php echo date_i18n(get_option('date_format') ?? 'Y-m-d', strtotime($stat->date_created)); ?>" data-partial-paid="<?php echo $total_paid; ?>" data-partial-paid-amount="<?php echo $stat->paid; ?>" data-partial-due="<?php echo $due > 0 ? $due : 0; ?>" data-partial-payment-id="<?php echo $stat->ID; ?>" data-action-type="share-email"><span class="dashicons dashicons-email-alt"></span></a>
+                                </span>
                             </td>
                         </tr>
 						<?php $total_paid -= $stat->paid; ?>

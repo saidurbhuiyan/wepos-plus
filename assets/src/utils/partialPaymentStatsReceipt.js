@@ -13,29 +13,29 @@ async function uploadPDF(pdfBlob, filename) {
         });
 
         const data = await response.json();
-        if (data.length > 0) {
-            const existingPdfId = data[0].id;
-            return await replacePDF(existingPdfId, formData);
-        } else {
-            return await createPDF(formData);
+        if (data.length > 0 && data[0].media_details.filesize === formData.get('file').size) {
+            return data[0].source_url;
         }
+        if(data.length > 0) {
+          await deletePDF(data[0].id);
+        }
+            return await createPDF(formData);
     } catch (error) {
         console.error('Error:', error);
     }
 }
 
-async function replacePDF(pdfId, formData) {
+async function deletePDF(pdfId) {
     try {
-        const response = await fetch(weposData.mediaUrl + `/${pdfId}`, {
-            method: 'POST',
+        const response = await fetch(weposData.mediaUrl + `/${pdfId}?force=true`, {
+            method: 'DELETE',
             headers: {
                 'X-WP-Nonce': weposData.nonce, // Include the nonce in the request headers
-            },
-            body: formData
+            }
         });
 
         const data = await response.json();
-        return data.source_url;
+        return data.deleted;
     } catch (error) {
         console.error('Error:', error);
     }
@@ -121,8 +121,9 @@ async function generateReceiptPDF(printdata, settings, partialPaymentId,actionTy
     // Add Line Items
     doc.setFont("Helvetica", "bold");
     doc.text('Product', 11, yPosition);
-    doc.text('Quantity', 100, yPosition, {align: 'center'});
-    doc.text('Price', 198, yPosition, {align: 'right'});
+    doc.text('Cost', 100, yPosition, {align: 'center'});
+    doc.text('Quantity', 145, yPosition, {align: 'center'});
+    doc.text('Total', 198, yPosition, {align: 'right'});
 
     const expiryData = printdata.meta_data?.find(item => item.key === '_wepos_product_expiry_data')?.value;
     printdata.line_items.forEach(item => {
@@ -130,7 +131,8 @@ async function generateReceiptPDF(printdata, settings, partialPaymentId,actionTy
         doc.setFont("Helvetica", "bold");
         doc.text(item.name, 11, yPosition);
         doc.setFont("Helvetica", "normal");
-        doc.text(`${item.quantity}`, 100, yPosition, {align: 'center'});
+        doc.text(formatPrice(item.price), 100, yPosition, {align: 'center'});
+        doc.text(`${item.quantity}`, 145, yPosition, {align: 'center'});
         doc.text(formatPrice(item.subtotal), 198, yPosition, {align: 'right'});
 
         // Add attributes
@@ -172,10 +174,11 @@ async function generateReceiptPDF(printdata, settings, partialPaymentId,actionTy
         const itemTotal = parseFloat(item.total);
         const itemSubtotal = parseFloat(item.subtotal);
         const discount = itemSubtotal - itemTotal;
+        const perDiscount = (discount / item.quantity).toFixed(2);
         if (discount > 0) {
             yPosition += 5;
             doc.setTextColor(117, 133, 152);
-            doc.text(`Discount: -${formatPrice(discount.toFixed(2))}`, 12, yPosition);
+            doc.text(`Discount: -${formatPrice(discount.toFixed(2)) + ' (' + item.quantity + 'x' + perDiscount  + ')'}`, 12, yPosition);
         }
         doc.setTextColor(0, 0, 0);
     });
@@ -363,7 +366,8 @@ async function generateReceiptPDF(printdata, settings, partialPaymentId,actionTy
         const whatsappMessage = encodeURIComponent("Check out Your Order Receipt: " + pdfUrl);
         actionUrl = `https://api.whatsapp.com/send?text=${whatsappMessage}`;
         if(phoneNumber && phoneNumber !== '') {
-            actionUrl += `&phone=351${phoneNumber}`;
+            phoneNumber = phoneNumber.replaceAll('+', '');
+            actionUrl += `&phone=${phoneNumber}`;
         }
     }
 
@@ -436,6 +440,13 @@ jQuery(document).ready(function($) {
         if (!e.target.classList.contains('partial-receipt') && !e.target.parentNode.classList.contains('partial-receipt')) {
            return;
         }
+
+        //start process
+        let generateReceipt = $('#generating-receipt');
+        let receiptAction = $('#receipt-actions');
+        generateReceipt.show();
+        receiptAction.hide();
+
         let printData = {};
         const partialReceipt = $(e.target.closest('.partial-receipt'))
         const totalPartialPaid = parseFloat(partialReceipt.attr('data-partial-paid')?? 0).toFixed(2);
@@ -459,24 +470,25 @@ jQuery(document).ready(function($) {
 
             const parser = new DOMParser(),
                 dom = parser.parseFromString(partialPaymentData.settings.wepos_receipts.receipt_header, "text/html");
-
-            let processNext = true;
-            let phoneNumber = '';
-            if (actionType === 'share-whatsapp') {
-                processNext = false;
-                const setPhoneNumber = prompt("Please enter the portugese phone number to send the receipt to (without country code):");
+            let phoneNumber = printData.billing.phone ?? '';
+            if (actionType === 'share-whatsapp' && phoneNumber === '') {
+                const setPhoneNumber = prompt("Please enter the phone number with country code (example +351) to send the receipt:");
                 if (setPhoneNumber) {
-                    processNext = true;
                     phoneNumber = setPhoneNumber.replaceAll(/\s/g,'');
                 }
             }
 
-            if (processNext){
+            if (actionType !== 'share-whatsapp' || (actionType === 'share-whatsapp' && phoneNumber !== '')) {
                 await generateReceiptPDF(printData, partialPaymentData.settings, partialPaymentId, actionType, phoneNumber);
-         }
+            }
+
         } catch (error) {
             console.log(error);
         }
+
+        //end process
+        generateReceipt.hide();
+        receiptAction.show();
 
     });
 });

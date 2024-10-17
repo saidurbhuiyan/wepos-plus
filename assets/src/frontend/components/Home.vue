@@ -223,8 +223,9 @@
             <thead>
             <tr>
               <th width="65%">{{ __('Product', 'wepos') }}</th>
+              <th width="15%">{{ __('Price', 'wepos') }}</th>
               <th width="15%">{{ __('Qty', 'wepos') }}</th>
-              <th width="30%">{{ __('Price', 'wepos') }}</th>
+              <th width="30%">{{ __('Total Price', 'wepos') }}</th>
               <th></th>
               <th></th>
             </tr>
@@ -243,12 +244,24 @@
                       </ul>
                     </div>
                     <div class="fixed-discount" v-if="hasProductDiscount(item.product_id)">
-                      Discount: {{ getProductDiscount(item.product_id) + ' ' + wepos.currency_format_symbol }}
+                      Discount: {{ getProductDiscount(item.product_id, item.quantity) }}
                       <span class="action">
                                                 <span class="flaticon-cancel-music"
                                                       @click="(e) => removeProductDiscount(e,item.product_id)"></span>
                                             </span>
                     </div>
+                  </td>
+                  <td class="price" @click="toggleEditQuantity( item, key )">
+                    <template v-if="item.on_sale">
+                      <span class="sale-price">{{ formatPrice(item.sale_price) }}</span>
+                      <span class="regular-price">{{ formatPrice(item.regular_price) }}</span>
+                    </template>
+                    <template v-else>
+                      <span class="sale-price" v-if="item.vendor_type === 'local'">{{ formatPrice(item.local_price) }}</span>
+                      <span class="sale-price" v-else-if="item.vendor_type === 'export'">{{ formatPrice(item.export_price) }}</span>
+                      <span class="sale-price" v-else>{{ formatPrice(item.regular_price) }}</span>
+                    </template>
+
                   </td>
                   <td class="qty" @click="toggleEditQuantity( item, key )">{{ item.quantity }}</td>
                   <td class="price" @click="toggleEditQuantity( item, key )">
@@ -272,7 +285,7 @@
                   </td>
                 </tr>
                 <tr v-if="item.editQuantity && item.stock_expiry" class="update-quantity-wrap">
-                  <td colspan="5">
+                  <td colspan="6">
                     <div v-if="getExpiryData(item)" style="width: 100%;">
                       <span class="qty">{{ __('Expiry', 'wepos') }}</span>
                       <select id="search_by" name="expiry" v-model="selectedExpiryKey">
@@ -326,14 +339,14 @@
                   <td colspan="1" v-if="!hasExpiryQuantity(item)">
                     <span class="qty">{{ __('Quantity', 'wepos') }}</span>
                     <span class="qty-number">
-                      <input type="number" min="1" step="1" v-model="item.quantity" :disabled="true">
+                      <input type="number" min="1" step="1" v-model="item.quantity">
                     </span>
                     <span class="qty-action">
                       <a href="#" class="add" @click.prevent="addQuantity( key )">&#43;</a>
                       <a href="#" class="minus" @click.prevent="removeQuantity( key )">&#45;</a>
                     </span>
                   </td>
-                  <td :colspan="hasExpiryQuantity(item) ? 5 : 4" :style="hasExpiryQuantity(item) ? '' : 'text-align: center;'">
+                  <td :colspan="hasExpiryQuantity(item) ? 6 : 5" :style="hasExpiryQuantity(item) ? '' : 'text-align: center;'">
                     <template v-if="!hasProductDiscount(item.product_id)">
                       <span class="qty">{{ __('Discount per Quantity', 'wepos') }}</span>
                       <span class="input-addon">
@@ -630,10 +643,19 @@
                     </div>
                     <div v-if="hasProductDiscount(item.product_id)"
                          style="color: #758598 !important; font-weight: 400 !important;">
-                      <small>Discount: {{ getProductDiscount(item.product_id) + ' ' + wepos.currency_format_symbol }}
+                      <small>Discount: {{ getProductDiscount(item.product_id, item.quantity) }}
                       </small>
                     </div>
 
+                  </td>
+                  <td class="price">
+                    <template v-if="item.on_sale">
+                      <span class="sale-price">{{ formatPrice(item.sale_price) }}</span>
+                      <span class="regular-price">{{ formatPrice(item.regular_price) }}</span>
+                    </template>
+                    <template v-else>
+                      <span class="sale-price">{{ formatPrice(item.regular_price) }}</span>
+                    </template>
                   </td>
                   <td class="quantity">{{ item.quantity }}</td>
                   <td class="price">
@@ -1282,12 +1304,11 @@ export default {
       return item.stock_expiry.find(data => data.date === date)
     },
 
-    getProductDiscount(productId) {
+    getProductDiscount(productId, quantity) {
       const discount = this.cartdata.coupon_lines
-          .filter(coupon => typeof coupon.product_ids !== 'undefined' && coupon.product_ids.includes(productId))
-          .map(coupon => coupon.total);
-
-      return discount && discount.length > 0 ? parseFloat(discount[0]).toFixed(2) : '0.00';
+          .filter(coupon => typeof coupon.product_ids !== 'undefined' && coupon.product_ids.includes(productId));
+      const totalDiscount  = discount && discount.length > 0 ? discount[0] : {total: '0.00', value: '0.00'};
+     return parseFloat(totalDiscount.total).toFixed(2) +' '+ this.wepos.currency_format_symbol+' (' + quantity + 'x' + totalDiscount.value  + ')';
     },
 
     getProductStockStatus(product) {

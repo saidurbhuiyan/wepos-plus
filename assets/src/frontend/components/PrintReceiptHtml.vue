@@ -59,10 +59,22 @@
                           </div>
                           <div v-if="hasProductDiscount(item.product_id)"
                                style="color: #758598 !important; font-weight: 400 !important;">
-                            <small>Discount: {{ getProductDiscount(item.product_id) + ' ' + wepos.currency_format_symbol }}
+                            <small>Discount: {{ getProductDiscount(item.product_id, item.quantity) }}
                             </small>
                           </div>
                         </td>
+                      <td class="price">
+                        <template v-if="item.on_sale">
+                          <span class="regular-price">{{ formatPrice( item.regular_price ) }}</span>
+                          <span class="sale-price">{{ formatPrice( item.sale_price ) }}</span>
+                        </template>
+                        <template v-else>
+                          <span class="sale-price" v-if="item.vendor_type === 'local'">{{ formatPrice(item.local_price) }}</span>
+                          <span class="sale-price" v-else-if="item.vendor_type === 'export'">{{ formatPrice(item.export_price) }}</span>
+                          <span class="sale-price" v-else>{{ formatPrice( item.regular_price) }}</span>
+
+                        </template>
+                      </td>
                         <td class="quantity">{{ item.quantity }}</td>
                         <td class="price">
                             <template v-if="item.on_sale">
@@ -210,12 +222,12 @@ export default {
         return this.printdata.coupon_lines.some(coupon => coupon.product_ids?.includes(productId));
       },
 
-      getProductDiscount(productId) {
+      getProductDiscount(productId, quantity) {
         const discount = this.printdata.coupon_lines
-            .filter(coupon => typeof coupon.product_ids !== 'undefined' && coupon.product_ids.includes(productId))
-            .map(coupon => coupon.total);
+            .filter(coupon => typeof coupon.product_ids !== 'undefined' && coupon.product_ids.includes(productId));
 
-        return discount && discount.length > 0 ? parseFloat(discount[0]).toFixed(2) : '0.00';
+        const totalDiscount  = discount && discount.length > 0 ? discount[0] : {total: '0.00', value: '0.00'};
+        return parseFloat(totalDiscount.total).toFixed(2) +' '+ this.wepos.currency_format_symbol+' (' + quantity + 'x' + totalDiscount.value  + ')';
       },
 
       receiptInfo(settingReceipt){

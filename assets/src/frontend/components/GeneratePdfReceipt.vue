@@ -40,22 +40,23 @@ export default {
       try {
         const data = await wepos.api.get(`${wepos.rest.root}wp/v2/media?search=${filename}`).promise();
 
-        if (data.length > 0) {
-          const existingPdfId = data[0].id;
-          return await this.replacePDF(existingPdfId, formData);
-        } else {
-          return await this.createPDF(formData);
+        if (data.length > 0 && data[0].media_details.filesize === formData.get('file').size) {
+          return data[0].source_url;
         }
+          if(data.length > 0) {
+            await this.deletePDF(data[0].id);
+          }
+          return await this.createPDF(formData);
 
       } catch (error) {
         console.error("Error:", error);
         return null;
       }
     },
-    async replacePDF(pdfId, formData) {
+    async deletePDF(pdfId) {
       try {
-        const response = await wepos.api.post(`${wepos.rest.root}wp/v2/media/${pdfId}`, formData).promise();
-        return response.source_url;
+        const response = await wepos.api.delete(`${wepos.rest.root}wp/v2/media/${pdfId}?force=true`).promise();
+        return response.deleted;
       } catch (error) {
         console.error("Error:", error);
         return null;
@@ -149,19 +150,21 @@ export default {
     // Add Line Items
     doc.setFont("Helvetica", "bold");
     doc.text('Product', 11, yPosition);
-    doc.text('Quantity', 100, yPosition, {align: 'center'});
-    doc.text('Price', 198, yPosition, {align: 'right'});
+    doc.text('Cost', 100, yPosition, {align: 'center'});
+    doc.text('Quantity', 145, yPosition, {align: 'center'});
+    doc.text('Total', 198, yPosition, {align: 'right'});
 
     printdata.line_items.forEach(item => {
       yPosition += 5;
+      let price = item.vendor_type === 'local'? item.local_price : item.regular_price
+      price = item.vendor_type === 'export' ? item.export_price : price
+      price = item.on_sale ? item.sale_price : price
       doc.setFont("Helvetica", "bold");
       doc.text(item.name, 11, yPosition);
       doc.setFont("Helvetica", "normal");
-      doc.text(`${item.quantity}`, 100, yPosition, {align: 'center'});
-        let price = item.vendor_type === 'local'? item.local_price : item.regular_price
-        price = item.vendor_type === 'export' ? item.export_price : price
-        price = item.on_sale ? item.sale_price : price
-        doc.text(this.formatPrice(item.quantity*price), 198, yPosition, {align: 'right'});
+      doc.text(this.formatPrice(price), 100, yPosition, {align: 'center'});
+      doc.text(`${item.quantity}`, 145, yPosition, {align: 'center'});
+      doc.text(this.formatPrice(item.quantity*price), 198, yPosition, {align: 'right'});
 
         // Add attributes
       if (item.attribute && item.attribute.length > 0) {
@@ -169,7 +172,7 @@ export default {
         doc.setFontSize(7);
         let previousWidth = 12;
         item.attribute.forEach(attribute_item => {
-          if(attribute_item.key.startsWith("pa_")){
+          if(attribute_item?.key?.startsWith("pa_")){
             // Set color for the display key
             doc.setTextColor(117, 133, 152); // Gray color
             doc.text(`${attribute_item.name}: `, previousWidth, yPosition, { baseline: 'top' });
@@ -199,12 +202,11 @@ export default {
       }
 
       const discount = printdata.coupon_lines
-          .filter(coupon => typeof coupon.product_ids !== 'undefined' && coupon.product_ids.includes(item.product_id))
-          .map(coupon => coupon.total);
+          .filter(coupon => typeof coupon.product_ids !== 'undefined' && coupon.product_ids.includes(item.product_id));
       if (discount && discount.length > 0) {
         yPosition += 5;
         doc.setTextColor(117, 133, 152);
-        doc.text(`Discount: ${parseFloat(discount[0]).toFixed(2) + ' ' + wepos.currency_format_symbol}`, 12, yPosition);
+        doc.text(`Discount: ${parseFloat(discount[0].total).toFixed(2) + ' ' + wepos.currency_format_symbol +' (' + item.quantity + 'x' + discount[0].value  + ')'}`, 12, yPosition);
       }
       doc.setTextColor(0, 0, 0);
     });
@@ -384,7 +386,7 @@ export default {
         let setPhoneNumber = '';
 
         if (phoneNumber === '') {
-          setPhoneNumber = prompt("Please enter the phone number with country code(+351) to send the receipt to (with country code):");
+          setPhoneNumber = prompt("Please enter the phone number with country code (example +351) to send the receipt:");
         }
 
         if (setPhoneNumber) {
