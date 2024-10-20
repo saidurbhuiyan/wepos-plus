@@ -291,7 +291,7 @@ class PartialPayment
 		$css = '.widefat .column-order_due_amount, .widefat .column-order_due_amount, .widefat .column-vendor_type { width: 9%; text-align: center; } .order-status.status-partial {
                 background: #ffeb3b;
                 color: #000;
-            } .text-success { color: #4caf50; } .text-info{ color: #2196f3; } .text-danger { color: #f44336; } .text-warning { color: #ff9800; } .text-primary { color: #9c27b0; } .text-secondary { color: #9e9e9e; }';
+            }';
 		wp_add_inline_style('woocommerce_admin_styles', $css);
 	}
 

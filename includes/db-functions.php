@@ -103,8 +103,7 @@ function get_due_amount($order_id, $total_amount) {
  * insert to user activity log table
  * @param $log_type
  * @param $reference_id
- * @param $old_value
- * @param $new_value
+ * @param $action_data
  * @return void
  */
 function insert_user_activity_log($log_type, $reference_id, $action_data) {
@@ -134,7 +133,7 @@ function insert_user_activity_log($log_type, $reference_id, $action_data) {
             'reference_id'=> $reference_id,
             'user_id'     => $user_id,
             'details'     => $details,
-            'action_time' => current_time('mysql')
+            'action_time' => current_time('mysql'),
         ],
         ['%s', '%d', '%d', '%s', '%s']
     );
@@ -171,7 +170,7 @@ function paginate_user_activity_logs($logs_per_page = 10, $current_page = 1) {
     if ($logs === false) {
         return      [
             'status'     => false,
-            'message'    => 'Could not retrieve data from the database: '.$wpdb->last_error
+            'message'    => 'Could not retrieve data from the database: '.$wpdb->last_error,
         ];
     }
 
@@ -179,7 +178,82 @@ function paginate_user_activity_logs($logs_per_page = 10, $current_page = 1) {
         'status'     => true,
         'data' => [
         'total_logs' => $total_logs?? 0,
-        'logs'       => $logs
-        ]
+        'logs'       => $logs,
+        ],
+    ];
+}
+
+/**
+ * @param int $per_page
+ * @param int $current_page
+ * @return array
+ */
+function paginate_expiring_products($per_page = 10, $current_page = 1)
+{
+    // Set up query arguments
+    $args = [
+        'post_type'      => 'product',
+        'post_status'    => 'publish',
+        'posts_per_page' => $per_page,
+        'paged'          => $current_page,
+        'meta_query'     => [
+            [
+                'key'     => '_expiry_data',
+                'compare' => 'EXISTS',
+            ],
+            [
+                'key'     => '_expiry_rule',
+                'value'   => 'yes',
+                'compare' => '=',
+            ],
+            [
+                'key'     => '_expired_alert_sent',
+                'value'   => 'yes',
+                'compare' => '=',
+            ]
+        ],
+    ];
+
+    // WP_Query instance
+    $query = new WP_Query($args);
+
+    // If no posts found
+    if (!$query->have_posts()) {
+        return [
+            'status'  => false,
+            'message' => 'No expiring products found.',
+        ];
+    }
+
+    $expiring_products = [];
+
+    // Loop through the posts
+    while ($query->have_posts()) {
+        $query->the_post();
+
+        $expiry_data = get_post_meta(get_the_ID(), '_expiry_data', true);
+        $expiry_alert_duration = (int)get_post_meta(get_the_ID(), '_expiry_alert_duration', true);
+        $expiry_alert_duration = ($expiry_alert_duration+0.5) * DAY_IN_SECONDS;
+
+        if ($expiry_data) {
+            $expiry_data = maybe_unserialize($expiry_data);
+            $expiry_data = array_filter($expiry_data, static fn($item) => $item['date'] && (strtotime($item['date'])-$expiry_alert_duration) <= time());
+            $expiring_products[] = (object)[
+                'ID'          => get_the_ID(),
+                'post_title'  => get_the_title(),
+                'expiry_data' => $expiry_data,
+            ];
+        }
+    }
+
+    // Reset post data to avoid conflicts
+    wp_reset_postdata();
+
+    return [
+        'status' => true,
+        'data'   => [
+            'total_products' => $query->found_posts,
+            'products'       => $expiring_products,
+        ],
     ];
 }

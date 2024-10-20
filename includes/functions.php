@@ -410,3 +410,23 @@ function get_hpos_hook_names($hook_name) {
 
 	return is_hpos_enabled() && isset($hpos_hook_names[$hook_name]) ? $hpos_hook_names[$hook_name] : $hook_name;
 }
+
+/**
+ * Sending mail to all admins
+ * @param $subject
+ * @param $message
+ * @return void
+ */
+function send_mail_to_admins($subject, $message) {
+    // Get admin users
+    $adminUsers = get_users(array('role' => 'Administrator'));
+
+    // Send email to all admins
+    foreach ($adminUsers as $adminUser) {
+        $admin_email = $adminUser->user_email;
+        if (!wp_mail($admin_email, $subject, $message)) {
+            // Error logging if email fails
+            error_log('Email failed to send to ' . $admin_email);
+        }
+    }
+}

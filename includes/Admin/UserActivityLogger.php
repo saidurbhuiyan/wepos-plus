@@ -137,16 +137,6 @@ class UserActivityLogger {
             ucfirst(esc_html(wp_get_current_user()->user_login)) // Escape user login for safety
         );
 
-        // Get admin users
-        $adminUsers = get_users(array('role' => 'Administrator')); // Use array for role
-
-        // Send email to all admins
-        foreach ($adminUsers as $adminUser) {
-            $admin_email = $adminUser->user_email;
-            if (!wp_mail($admin_email, $subject, $message)) {
-                // Error logging if email fails
-                error_log('Email failed to send to ' . $admin_email);
-            }
-        }
+        send_mail_to_admins($subject, $message);
     }
 }

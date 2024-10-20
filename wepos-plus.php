@@ -52,6 +52,7 @@ use WeDevs\WePOS\Assets;
 use WeDevs\WePOS\Common;
 use WeDevs\WePOS\CustomManager;
 use WeDevs\WePOS\Dokan;
+use WeDevs\WePOS\ExpiryAlertManager;
 use WeDevs\WePOS\ExpiryStockManager;
 use WeDevs\WePOS\Frontend;
 use WeDevs\WePOS\Installer;
@@ -333,6 +334,10 @@ final class WePOS {
                 $user->remove_cap( 'list_users' );
             }
         }
+
+        //remove scheduled event
+        $timestamp = wp_next_scheduled('wepos_check_expiry_event');
+        wp_unschedule_event($timestamp, 'wepos_check_expiry_event');
     }
 
     /**
@@ -364,6 +369,7 @@ final class WePOS {
 		new PartialPayment();
 	    new CustomManager();
         new ExpiryStockManager();
+        new ExpiryAlertManager();
         if ( is_admin() ) {
             $this->container['admin']    = new Admin();
             $this->container['settings'] = new Settings();

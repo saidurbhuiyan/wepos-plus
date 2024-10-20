@@ -117,7 +117,7 @@ class ExpiryStockManager
 
         foreach ($expiry as $data) {
             echo '<p> <span class="text-success">'.(isset($data['buying_price']) ? wc_price($data['buying_price'])  : 'NaN') .'</span> - '.$data['quantity'].'x '.date($date_format, strtotime($data['date'])).
-            ' ( <span class="text-info">'.($data['company']?? 'NaN').'</span> )</p>';
+            ' ( <span class="text-info">'.(!empty($expiry_date['company']) ? $expiry_date['company'] : 'NaN').'</span> )</p>';
         }
 
 
@@ -134,13 +134,13 @@ class ExpiryStockManager
     public function add_quantity_per_box_and_expiry_rule_fields() {
 
         // Quantity Per Box Field
-        $quantity_per_box = get_post_meta( get_the_ID(), '_quantity_per_box', true );
+        $quantity_per_box = get_post_meta( get_the_ID(), '_quantity_per_box', true ) ?? 0;
         echo '<div class="options_group">';
 
         woocommerce_wp_text_input(
             array(
                 'id'                => '_quantity_per_box',
-                'value'             =>  $quantity_per_box ?? 0,
+                'value'             =>  $quantity_per_box,
                 'label'             => __( 'Quantity Per Box', 'woocommerce' ),
                 'desc_tip'          => true,
                 'description'       => __( 'Total quantity of product per box.', 'wepos' ),
@@ -153,11 +153,27 @@ class ExpiryStockManager
 
         echo '</div>';
 
+        echo '<div class="options_group">';
+        // Expiry alert duration Field
+        $quantity_per_box = get_post_meta( get_the_ID(), '_expiry_alert_duration', true ) ?? 10;
+        woocommerce_wp_text_input(
+            array(
+                'id'                => '_expiry_alert_duration',
+                'value'             =>  $quantity_per_box !== '' ? $quantity_per_box : 10,
+                'label'             => __( 'Expiry Alert Duration (Days)', 'woocommerce' ),
+                'desc_tip'          => true,
+                'description'       => __( 'when the email alert will be sent before the expiry date is reached', 'wepos' ),
+                'type'              => 'number',
+                'custom_attributes' => array(
+                    'step' => 'any',
+                ),
+            )
+        );
+
         // Expiry Rule Field
         $expiry_dates = get_post_meta( get_the_ID(), '_expiry_data', true );
         $expiry_rule = get_post_meta( get_the_ID(), '_expiry_rule', true );
         $manage_stock = get_post_meta( get_the_ID(), '_manage_stock', true );
-        echo '<div class="options_group">';
         // Expiry Rule Dropdown
         woocommerce_wp_select([
             'id' => '_expiry_rule',
@@ -171,6 +187,7 @@ class ExpiryStockManager
             'value' => $manage_stock === 'yes' ? $expiry_rule : 'no',
 
         ]);
+
 
         // Placeholder for Expiry Date and Quantity Fields
         echo '<div id="expiry_date_fields" ' . ($expiry_rule === 'yes' && $manage_stock === 'yes' ? '' : 'style="display: none;"') . '>
@@ -225,6 +242,10 @@ class ExpiryStockManager
         // Quantity Per Box
         $quantity_per_box = isset($_POST['_quantity_per_box']) ? sanitize_text_field($_POST['_quantity_per_box']) : 0;
         update_post_meta($post_id, '_quantity_per_box', $quantity_per_box);
+
+        // Expiry Alert Duration
+        $expiry_alert_duration = isset($_POST['_expiry_alert_duration']) ? sanitize_text_field($_POST['_expiry_alert_duration']) : 10;
+        update_post_meta($post_id, '_expiry_alert_duration', $expiry_alert_duration);
 
         // Expiry Rule
         $expiry_rule = isset($_POST['_expiry_rule']) ? sanitize_text_field($_POST['_expiry_rule']) : 'no';
@@ -290,7 +311,7 @@ class ExpiryStockManager
 			if (is_array($expiry_dates) && count($expiry_dates) > 0) {
 				$date_format = get_option( 'date_format' );
 				foreach ($expiry_dates as $expiry_date):
-				echo '<div style="margin-bottom: 4px;"><span class="text-success">'.(isset($expiry_date['buying_price']) ? wc_price($expiry_date['buying_price']) : 'NaN') . '</span> - ' . $expiry_date['quantity'] . 'x  '.date($date_format, strtotime($expiry_date['date'])).' ( <span class="text-info">'.($expiry_date['company']?? 'NaN') .' </span>)</div>';
+				echo '<div style="margin-bottom: 4px;"><span class="text-success">'.(isset($expiry_date['buying_price']) ? wc_price($expiry_date['buying_price']) : 'NaN') . '</span> - ' . $expiry_date['quantity'] . 'x  '.date($date_format, strtotime($expiry_date['date'])).' ( <span class="text-info">'.(!empty($expiry_date['company']) ? $expiry_date['company'] : 'NaN') .' </span>)</div>';
                 endforeach;
 			} else {
 				echo '<span class="na">–</span>';
