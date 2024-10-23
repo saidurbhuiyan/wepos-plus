@@ -166,7 +166,8 @@ class ExpiryAlertManager
         echo '<div class="wrap">';
         echo '<h1>Expired/Expiring Products</h1>';
         echo '<table class="wp-list-table widefat fixed striped">';
-        echo '<thead><tr><th>Product Name</th><th>Expiry Details (Quantity, Date, Company, Status)</th></tr></thead><tbody>';
+        echo '<thead><tr><th>'. esc_html__('Product Title', 'woocommerce').'</th>
+<th>'. esc_html__('Expiry Details (Quantity, Date, Company, Status)', 'woocommerce'). '</th></tr></thead><tbody>';
 
         if ($expired_products['status']) {
             $date_format = get_option('date_format');
@@ -191,24 +192,10 @@ class ExpiryAlertManager
         $total_pages = ceil($total_products / $this->per_page);
         $current_page = max(1, $paged);
 
-        echo '<div class="tablenav bottom"><div class="tablenav-pages">';
-        echo '<span class="displaying-num">' . esc_html($total_products) . ' items</span>';
-        echo '<span class="pagination-links">';
+        // Display pagination
+        custom_pagination_format($total_products, $total_pages, $current_page);
 
-        // First & Previous links
-        $prev_disabled = $current_page <= 1 ? 'disabled' : '';
-        echo '<a class="first-page button ' . $prev_disabled . '" href="' . esc_url(add_query_arg('paged', 1)) . '">&laquo;</a>';
-        echo '<a class="prev-page button ' . $prev_disabled . '" href="' . esc_url(add_query_arg('paged', $current_page - 1)) . '">&lsaquo;</a>';
-
-        // Page display
-        echo '<span class="paging-input"><span class="tablenav-paging-text">' . esc_html($current_page) . ' of ' . esc_html($total_pages) . '</span></span>';
-
-        // Next & Last links
-        $next_disabled = $current_page >= $total_pages ? 'disabled' : '';
-        echo '<a class="next-page button ' . $next_disabled . '" href="' . esc_url(add_query_arg('paged', $current_page + 1)) . '">&rsaquo;</a>';
-        echo '<a class="last-page button ' . $next_disabled . '" href="' . esc_url(add_query_arg('paged', $total_pages)) . '">&raquo;</a>';
-
-        echo '</span></div></div></div>';
+        echo '</div>';
     }
 
 

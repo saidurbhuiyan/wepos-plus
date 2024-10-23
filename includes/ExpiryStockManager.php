@@ -138,17 +138,17 @@ class ExpiryStockManager
         echo '<div class="options_group">';
 
         woocommerce_wp_text_input(
-            array(
+            [
                 'id'                => '_quantity_per_box',
                 'value'             =>  $quantity_per_box,
                 'label'             => __( 'Quantity Per Box', 'woocommerce' ),
                 'desc_tip'          => true,
                 'description'       => __( 'Total quantity of product per box.', 'wepos' ),
                 'type'              => 'number',
-                'custom_attributes' => array(
+                'custom_attributes' => [
                     'step' => 'any',
-                ),
-            )
+                ],
+            ]
         );
 
         echo '</div>';
@@ -157,17 +157,17 @@ class ExpiryStockManager
         // Expiry alert duration Field
         $quantity_per_box = get_post_meta( get_the_ID(), '_expiry_alert_duration', true ) ?? 10;
         woocommerce_wp_text_input(
-            array(
+            [
                 'id'                => '_expiry_alert_duration',
                 'value'             =>  $quantity_per_box !== '' ? $quantity_per_box : 10,
                 'label'             => __( 'Expiry Alert Duration (Days)', 'woocommerce' ),
                 'desc_tip'          => true,
                 'description'       => __( 'when the email alert will be sent before the expiry date is reached', 'wepos' ),
                 'type'              => 'number',
-                'custom_attributes' => array(
+                'custom_attributes' => [
                     'step' => 'any',
-                ),
-            )
+                ],
+            ]
         );
 
         // Expiry Rule Field

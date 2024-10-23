@@ -56,6 +56,7 @@ use WeDevs\WePOS\ExpiryAlertManager;
 use WeDevs\WePOS\ExpiryStockManager;
 use WeDevs\WePOS\Frontend;
 use WeDevs\WePOS\Installer;
+use WeDevs\WePOS\LowStockManager;
 use WeDevs\WePOS\PartialPayment;
 use WeDevs\WePOS\REST\Manager as RestManager;
 use WeDevs\WePOS\Gateways\Manager as PaymentGatewayManager;
@@ -370,6 +371,7 @@ final class WePOS {
 	    new CustomManager();
         new ExpiryStockManager();
         new ExpiryAlertManager();
+        new LowStockManager();
         if ( is_admin() ) {
             $this->container['admin']    = new Admin();
             $this->container['settings'] = new Settings();

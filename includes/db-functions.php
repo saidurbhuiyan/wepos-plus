@@ -210,7 +210,7 @@ function paginate_expiring_products($per_page = 10, $current_page = 1)
                 'key'     => '_expired_alert_sent',
                 'value'   => 'yes',
                 'compare' => '=',
-            ]
+            ],
         ],
     ];
 
@@ -257,3 +257,132 @@ function paginate_expiring_products($per_page = 10, $current_page = 1)
         ],
     ];
 }
+
+/**
+ * Paginate low stock products using WP_Query
+ *
+ * @param int $per_page
+ * @param int $current_page
+ * @return array
+ */
+function paginate_low_stock_products($per_page = 10, $current_page = 1) {
+    global $wpdb;
+    // Determine the offset and whether to apply LIMIT
+    $limit_sql = '';
+    if ($per_page > 0) {
+        $offset = ($current_page - 1) * $per_page;
+        $limit_sql = "LIMIT %d OFFSET %d";
+    } else {
+        $offset = 0; // Just a placeholder; it won't be used
+    }
+
+    // Raw SQL to fetch low stock products for pagination
+    $sql = "
+        SELECT 
+            p.ID, 
+            p.post_title, 
+            pm1.meta_value AS stock_qty, 
+            pm2.meta_value AS low_stock_threshold,
+            (CAST(pm1.meta_value AS UNSIGNED) * CAST(wp_postmeta_price.meta_value AS DECIMAL)) AS total_price  -- Calculate total stock price for each product
+        FROM {$wpdb->posts} p
+        JOIN {$wpdb->postmeta} pm1 ON (p.ID = pm1.post_id AND pm1.meta_key = '_stock')
+        JOIN {$wpdb->postmeta} pm2 ON (p.ID = pm2.post_id AND pm2.meta_key = '_low_stock_amount')
+        JOIN {$wpdb->postmeta} wp_postmeta_price ON (p.ID = wp_postmeta_price.post_id AND wp_postmeta_price.meta_key = '_price')
+        WHERE p.post_type = 'product'
+        AND p.post_status = 'publish'
+        AND CAST(pm1.meta_value AS UNSIGNED) < CAST(pm2.meta_value AS UNSIGNED)
+        AND CAST(pm1.meta_value AS UNSIGNED) > 0
+        " . ($limit_sql ? sprintf($limit_sql, $per_page, $offset) : '');
+
+    // Fetch products for the current page
+    $products = $wpdb->get_results($wpdb->prepare($sql, $per_page, $offset));
+
+    if($per_page !== '-1') {
+    // Fetch total stock price based on all low stock products
+    $total_stock_price_query = "
+        SELECT 
+            COUNT(*) AS total_stock_qty,
+            SUM(CAST(pm1.meta_value AS UNSIGNED) * CAST(wp_postmeta_price.meta_value AS DECIMAL)) AS total_stock_price
+        FROM {$wpdb->posts} p
+        JOIN {$wpdb->postmeta} pm1 ON (p.ID = pm1.post_id AND pm1.meta_key = '_stock')
+        JOIN {$wpdb->postmeta} pm2 ON (p.ID = pm2.post_id AND pm2.meta_key = '_low_stock_amount')
+        JOIN {$wpdb->postmeta} wp_postmeta_price ON (p.ID = wp_postmeta_price.post_id AND wp_postmeta_price.meta_key = '_price')
+        WHERE p.post_type = 'product'
+        AND p.post_status = 'publish'
+        AND CAST(pm1.meta_value AS UNSIGNED) < CAST(pm2.meta_value AS UNSIGNED)
+        AND CAST(pm2.meta_value AS UNSIGNED) > 0
+    ";
+
+    // total stock price for all low stock products
+    $total_stock_price = $wpdb->get_var($total_stock_price_query, 1);
+
+        // total products for pagination
+        $total_products = $wpdb->get_var($total_stock_price_query);
+    }
+    // If no products found
+    if (empty($products)) {
+        return [
+            'status'  => false,
+            'message' => 'No low stock products found.',
+        ];
+    }
+
+
+    return [
+        'status' => true,
+        'data'   => [
+            'total_products'   => $total_products?? 0,
+            'products'         => array_map(static function ($product) {
+                return (object)[
+                    'ID'                 => $product->ID,
+                    'post_title'         => $product->post_title,
+                    'stock_qty'          => $product->stock_qty,
+                    'low_stock_threshold'=> $product->low_stock_threshold,
+                ];
+            }, $products),
+            'total_stock_price' => $total_stock_price?? 0,
+        ],
+    ];
+}
+
+
+
+/**
+ * Custom pagination format for displaying products
+ * @param $total_products
+ * @param $total_pages
+ * @param $current_page
+ * @param $left_data
+ * @return void
+ */
+function custom_pagination_format($total_products, $total_pages, $current_page, $left_data = null) {
+    echo '<div class="tablenav bottom">';
+
+    if ($left_data) {
+        echo '<div class="alignleft">' . $left_data . '</div>';
+    }
+
+    echo '<div class="tablenav-pages">';
+    echo '<span class="mx-1 displaying-num">' . esc_html($total_products) . ' items</span>';
+    echo '<span class="pagination-links">';
+
+    // Helper function to create pagination links
+    $create_link = static fn($page, $label, $is_disabled = false)=>
+        $is_disabled ?
+            '<span class="mx-1 button disabled">' . $label . '</span>' :
+            '<a class="mx-1 button" href="' . esc_url(add_query_arg('paged', $page)) . '">' . $label . '</a>';
+
+    // First & Previous links
+    echo $create_link(1, '&laquo;', $current_page <= 1);
+    echo $create_link($current_page - 1, '&lsaquo;', $current_page <= 1);
+
+    // Page display
+    echo '<span class="mx-1 paging-input"><span class="tablenav-paging-text">' . esc_html($current_page) . ' of ' . esc_html($total_pages) . '</span></span>';
+
+    // Next & Last links
+    echo $create_link($current_page + 1, '&rsaquo;', $current_page >= $total_pages);
+    echo $create_link($total_pages, '&raquo;', $current_page >= $total_pages);
+
+    echo '</span></div></div>';
+}
+
