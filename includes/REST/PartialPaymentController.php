@@ -99,7 +99,7 @@ class PartialPaymentController extends \WP_REST_Controller {
 
 		insert_partial_payment_stat( $order_id, $partial_amount );
 
-		$total_paid = get_total_paid( $order_id );
+		$total_paid = get_total_paid_query( $order_id );
 		update_post_meta( $order_id, '_wepos_cash_paid_amount', $total_paid );
 
 		if ( $total_paid >= $order->get_total() ) {

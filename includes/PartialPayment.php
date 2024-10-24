@@ -33,7 +33,7 @@ class PartialPayment
 		add_action('admin_notices', [$this, 'partial_payment_bulk_action_admin_notice']);
 		add_filter('woocommerce_admin_order_actions', [$this, 'add_actions_button_on_partial_order_status'], 100, 2);
 
-		add_action('woocommerce_admin_order_totals_after_tax', [$this, 'due_amount_on_order_details']);
+		add_action('woocommerce_admin_order_totals_after_total', [$this, 'due_amount_on_order_details']);
 
 		add_action('admin_enqueue_scripts', [$this, 'wepos_partial_payment_enqueue_scripts']);
 
@@ -47,16 +47,26 @@ class PartialPayment
         add_filter('upload_mimes', [$this,'allow_pdf_uploads']);
         add_action('wp', [$this,'my_custom_cron_schedule']);
         add_action('delete_old_receipt_pdfs', [$this,'delete_old_receipt_pdfs']);
-	}
+
+        // order refunded
+        add_action( 'woocommerce_order_refunded', [$this,'partial_action_on_order_refund'], 10, 2 );
+
+    }
+
+    public function partial_action_on_order_refund( $order_id, $refund_id )
+    {
+        $refund = wc_get_order( $refund_id );
+        $refund_amount = $refund->get_amount();
+        insert_partial_payment_stat($order_id, 0, $refund_amount);
+
+    }
 
     /**
      * reduce stock levels after partial payment
      * @param $order_id
      */
     public function partial_reduce_stock_levels($order_id){
-        $order = wc_get_order($order_id);
-        $order->reduce_order_stock();
-        $order->save();
+        wc_reduce_stock_levels($order_id);
     }
 
 
@@ -102,8 +112,9 @@ class PartialPayment
 		$order = wc_get_order($order);
 		$order_id = $order->get_id();
 		$partial_payment_stats = get_partial_payment_stats($order_id);
-		$total_paid = get_total_paid($order_id);
+		$total_paid = get_total_paid($partial_payment_stats);
 		$total_amount = $order->get_total();
+        $total_refund = $order->get_total_refunded();
 
         wp_localize_script('partial-payment-stats', 'partialPaymentData', array(
             'settings' => get_wepos_settings(),
@@ -118,39 +129,54 @@ class PartialPayment
             <table class="wp-list-table widefat fixed striped partial-payment-stats">
                 <thead>
                 <tr>
-                    <th class="manage-column column-id"><?php esc_html_e('ID', 'wepos'); ?></th>
-                    <th class="manage-column column-paid-amount"><?php esc_html_e('Paid Amount', 'wepos'); ?></th>
-                    <th class="manage-column column-total-due"><?php esc_html_e('Total Due', 'wepos'); ?></th>
-                    <th class="manage-column column-created-date"><?php esc_html_e('Created Date', 'wepos'); ?></th>
-                    <th class="manage-column column-receipt" style="text-align: center;"><?php esc_html_e('Actions', 'wepos'); ?></th>
+                    <th class="manage-column partial-column-id"><?php esc_html_e('ID', 'wepos'); ?></th>
+                    <th class="manage-column partial-column-paid-amount"><?php esc_html_e('Paid Amount', 'wepos'); ?></th>
+                    <th class="manage-column partial-column-total-refund"><?php esc_html_e('Total Refund', 'wepos'); ?></th>
+                    <th class="manage-column partial-column-total-due"><?php esc_html_e('Total Due', 'wepos'); ?></th>
+                    <th class="manage-column partial-column-created-date"><?php esc_html_e('Created Date', 'wepos'); ?></th>
+                    <th class="manage-column partial-column-receipt" style="text-align: center;"><?php esc_html_e('Actions', 'wepos'); ?></th>
                 </tr>
                 </thead>
                 <tbody>
 				<?php if (!empty($partial_payment_stats)): ?>
 					<?php foreach ($partial_payment_stats as $stat):
-						$due = $total_amount - $total_paid;
+						$due = $total_amount - $total_paid - $total_refund;
 						?>
                         <tr>
-                            <td class="column-id"><?php echo esc_html($stat->ID); ?></td>
-                            <td class="column-paid-amount"><?php echo wc_price($stat->paid); ?></td>
-                            <td class="column-total-due"><?php echo wc_price($due > 0 ? $due : 0); ?></td>
-                            <td class="column-created-date">
+                            <td class="partial-column-id"><?php echo esc_html($stat->ID); ?></td>
+                            <td class="partial-column-paid-amount"><?php echo wc_price($stat->paid); ?></td>
+                            <td class="partial-column-total-due"><?php echo wc_price($stat->refund??0); ?></td>
+                            <td class="partial-column-total-due"><?php echo wc_price($due > 0 ? $due : 0); ?></td>
+                            <td class="partial-column-created-date">
 								<?php echo esc_html(date_i18n(get_option('date_format') ?? 'Y-m-d', strtotime($stat->date_created))); ?>
                             </td>
-                            <td class="column-receipt" style="text-align: center;">
+                            <td class="partial-column-receipt" style="text-align: center;">
                                 <span id="generating-receipt" style="display: none">
                                     <button class="woocommerce-Button button" disabled> Generating Receipt...</button>
                                 </span>
                                 <span id="receipt-actions">
-                                <a class="partial-receipt text-primary" href="#" data-date-partial-paid="<?php echo date_i18n(get_option('date_format') ?? 'Y-m-d', strtotime($stat->date_created)); ?>" data-partial-paid="<?php echo $total_paid; ?>" data-partial-paid-amount="<?php echo $stat->paid; ?>" data-partial-due="<?php echo $due > 0 ? $due : 0; ?>" data-partial-payment-id="<?php echo $stat->ID; ?>" data-action-type="generate-receipt"><span class="dashicons dashicons-media-document"></span></a>
+                                <a class="partial-receipt text-primary" href="#" data-date-partial-paid="<?php echo date_i18n(get_option('date_format') ?? 'Y-m-d', strtotime($stat->date_created)); ?>"
+                                   data-partial-paid="<?php echo $total_paid; ?>" data-partial-paid-amount="<?php echo $stat->paid; ?>" data-partial-refund="<?php echo $stat->refund??0; ?>"
+                                   data-partial-total-refund="<?php echo $total_refund; ?>"
+                                   data-partial-due="<?php echo $due > 0 ? $due : 0; ?>" data-partial-payment-id="<?php echo $stat->ID; ?>" data-action-type="generate-receipt"><span class="dashicons dashicons-media-document"></span></a>
 
-                                <a class="partial-receipt text-success" href="#" data-date-partial-paid="<?php echo date_i18n(get_option('date_format') ?? 'Y-m-d', strtotime($stat->date_created)); ?>" data-partial-paid="<?php echo $total_paid; ?>" data-partial-paid-amount="<?php echo $stat->paid; ?>" data-partial-due="<?php echo $due > 0 ? $due : 0; ?>" data-partial-payment-id="<?php echo $stat->ID; ?>" data-action-type="share-whatsapp"><span class="dashicons dashicons-whatsapp"></span></a>
+                                <a class="partial-receipt text-success" href="#" data-date-partial-paid="<?php echo date_i18n(get_option('date_format') ?? 'Y-m-d', strtotime($stat->date_created)); ?>"
+                                   data-partial-paid="<?php echo $total_paid; ?>" data-partial-paid-amount="<?php echo $stat->paid; ?>"
+                                   data-partial-refund="<?php echo $stat->refund??0; ?>"
+                                   data-partial-total-refund="<?php echo $total_refund; ?>"
+                                   data-partial-due="<?php echo $due > 0 ? $due : 0; ?>" data-partial-payment-id="<?php echo $stat->ID; ?>" data-action-type="share-whatsapp"><span class="dashicons dashicons-whatsapp"></span></a>
 
-                                <a class="partial-receipt text-info" href="#" data-date-partial-paid="<?php echo date_i18n(get_option('date_format') ?? 'Y-m-d', strtotime($stat->date_created)); ?>" data-partial-paid="<?php echo $total_paid; ?>" data-partial-paid-amount="<?php echo $stat->paid; ?>" data-partial-due="<?php echo $due > 0 ? $due : 0; ?>" data-partial-payment-id="<?php echo $stat->ID; ?>" data-action-type="share-email"><span class="dashicons dashicons-email-alt"></span></a>
+                                <a class="partial-receipt text-info" href="#" data-date-partial-paid="<?php echo date_i18n(get_option('date_format') ?? 'Y-m-d', strtotime($stat->date_created)); ?>"
+                                   data-partial-paid="<?php echo $total_paid; ?>" data-partial-paid-amount="<?php echo $stat->paid; ?>"
+                                   data-partial-refund="<?php echo $stat->refund??0; ?>"
+                                   data-partial-total-refund="<?php echo $total_refund; ?>"
+                                   data-partial-due="<?php echo $due > 0 ? $due : 0; ?>" data-partial-payment-id="<?php echo $stat->ID; ?>" data-action-type="share-email"><span class="dashicons dashicons-email-alt"></span></a>
                                 </span>
                             </td>
                         </tr>
-						<?php $total_paid -= $stat->paid; ?>
+						<?php $total_paid -= $stat->paid;
+                        $total_refund -= $stat->refund
+                        ?>
 					<?php endforeach; ?>
 				<?php else: ?>
                     <tr>
@@ -174,10 +200,10 @@ class PartialPayment
 	public function due_amount_on_order_details($orderData)
 	{
 		$order = wc_get_order($orderData);
-		$paid = get_total_paid($order->get_id());
+		$paid = get_total_paid_query($order->get_id());
 
 
-		$due = $order->get_meta('_wepos_cash_payment_type') === 'partial' ? $order->get_total() - $paid : 0;
+		$due = $order->get_meta('_wepos_cash_payment_type') === 'partial' ? $order->get_remaining_refund_amount() - $paid : 0;
 
 		$html = '<tfoot>';
 		if ($due > 0) {
@@ -268,8 +294,8 @@ class PartialPayment
         $order = wc_get_order($post_id);
         // Due amount
 		if ('order_due_amount' === $column_name) {
-			$paid = get_total_paid($order->get_id());
-			$due = $order->get_meta('_wepos_cash_payment_type') === 'partial' ? $order->get_total() - $paid : 0;
+			$paid = get_total_paid_query($order->get_id());
+			$due = $order->get_meta('_wepos_cash_payment_type') === 'partial' ? $order->get_remaining_refund_amount() - $paid : 0;
 
 			$currency = is_callable([$order, 'get_currency']) ? $order->get_currency() : $order->order_currency;
 
@@ -288,10 +314,11 @@ class PartialPayment
 	 */
 	public function add_order_due_amount_column_style()
 	{
-		$css = '.widefat .column-order_due_amount, .widefat .column-order_due_amount, .widefat .column-vendor_type { width: 9%; text-align: center; } .order-status.status-partial {
+		$css = '.widefat .column-order_due_amount, .widefat .column-order_due_amount, .widefat .column-vendor_type { width: 9% !important; text-align: center; } .order-status.status-partial {
                 background: #ffeb3b;
                 color: #000;
-            }';
+            } .partial-column-id, .partial-column-paid-amount, .partial-column-total-due,
+            .partial-column-total-refund, .partial-column-created-date, .partial-column-receipt {width: 9% !important;} ';
 		wp_add_inline_style('woocommerce_admin_styles', $css);
 	}
 
@@ -404,8 +431,8 @@ class PartialPayment
 		$order_id = $order->get_id();
 
 		// Calculate due amount
-		$paid = get_total_paid($order_id); // Ensure this function exists and returns the correct amount
-		$due = $order->get_total() - $paid;
+		$paid = get_total_paid_query($order_id);
+		$due = $order->get_remaining_refund_amount() - $paid;
 
 		// Output the input field
 		echo '<div id="woocommerce-form-partial-payment">

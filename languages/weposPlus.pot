@@ -2,9 +2,9 @@
 # This file is distributed under the GPL2.
 msgid ""
 msgstr ""
-"Project-Id-Version: wePOSPlus - Point Of Sale (POS) for WooCommerce 1.3.2\n"
+"Project-Id-Version: wePOSPlus - Point Of Sale (POS) for WooCommerce 1.3.6\n"
 "Report-Msgid-Bugs-To: https://wordpress.org/support/plugin/wepos-plus\n"
-"POT-Creation-Date: 2024-10-20 05:10:08+00:00\n"
+"POT-Creation-Date: 2024-10-24 06:52:07+00:00\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
@@ -483,7 +483,7 @@ msgstr ""
 
 #: assets/src/frontend/components/PrintReceiptHtml.vue:29
 #: assets/src/frontend/components/PrintReceiptHtml.vue:125
-#: includes/PartialPayment.php:254
+#: includes/PartialPayment.php:280
 msgid "Vendor Type"
 msgstr ""
 
@@ -522,7 +522,7 @@ msgid "Cash Given"
 msgstr ""
 
 #: assets/src/frontend/components/PrintReceiptHtml.vue:144
-#: includes/PartialPayment.php:249 languages/wepos.php:98
+#: includes/PartialPayment.php:275 languages/wepos.php:98
 msgid "Due Amount"
 msgstr ""
 
@@ -628,19 +628,19 @@ msgstr ""
 msgid "Setting has been saved successfully."
 msgstr ""
 
-#: includes/Admin/Updates.php:76
+#: includes/Admin/Updates.php:77
 msgid "WePOS Data Update Required"
 msgstr ""
 
-#: includes/Admin/Updates.php:76
+#: includes/Admin/Updates.php:77
 msgid "We need to update your install to the latest version"
 msgstr ""
 
-#: includes/Admin/Updates.php:77
+#: includes/Admin/Updates.php:78
 msgid "Run the updater"
 msgstr ""
 
-#: includes/Admin/Updates.php:82
+#: includes/Admin/Updates.php:83
 msgid ""
 "It is strongly recommended that you backup your database before proceeding. "
 "Are you sure you wish to run the updater now?"
@@ -686,6 +686,14 @@ msgstr ""
 #: includes/Dokan.php:160 includes/ExpiryStockManager.php:182
 #: includes/functions.php:188 includes/functions.php:212
 msgid "No"
+msgstr ""
+
+#: includes/ExpiryAlertManager.php:169 includes/LowStockManager.php:59
+msgid "Product Title"
+msgstr ""
+
+#: includes/ExpiryAlertManager.php:170
+msgid "Expiry Details (Quantity, Date, Company, Status)"
 msgstr ""
 
 #: includes/ExpiryStockManager.php:144
@@ -767,45 +775,61 @@ msgstr ""
 msgid "Cash tendered amount: %1$s, Change amount: %2$s"
 msgstr ""
 
-#: includes/PartialPayment.php:121 includes/functions.php:198
+#: includes/LowStockManager.php:60
+msgid "Current Stock"
+msgstr ""
+
+#: includes/LowStockManager.php:61
+msgid "Low Stock Threshold"
+msgstr ""
+
+#: includes/LowStockManager.php:74
+msgid "No low stock products found."
+msgstr ""
+
+#: includes/PartialPayment.php:132 includes/functions.php:198
 msgid "ID"
 msgstr ""
 
-#: includes/PartialPayment.php:122
+#: includes/PartialPayment.php:133
 msgid "Paid Amount"
 msgstr ""
 
-#: includes/PartialPayment.php:123
+#: includes/PartialPayment.php:134
+msgid "Total Refund"
+msgstr ""
+
+#: includes/PartialPayment.php:135
 msgid "Total Due"
 msgstr ""
 
-#: includes/PartialPayment.php:124
+#: includes/PartialPayment.php:136
 msgid "Created Date"
 msgstr ""
 
-#: includes/PartialPayment.php:125
+#: includes/PartialPayment.php:137
 msgid "Actions"
 msgstr ""
 
-#: includes/PartialPayment.php:157
+#: includes/PartialPayment.php:183
 msgid "No partial payment records found."
 msgstr ""
 
-#: includes/PartialPayment.php:222
+#: includes/PartialPayment.php:248
 msgid "Processing"
 msgstr ""
 
-#: includes/PartialPayment.php:228
+#: includes/PartialPayment.php:254
 msgid "Complete"
 msgstr ""
 
-#: includes/PartialPayment.php:310
+#: includes/PartialPayment.php:337
 msgid "Partially Paid <span class=\"count\">(%s)</span>"
 msgid_plural "Partially Paid <span class=\"count\">(%s)</span>"
 msgstr[0] ""
 msgstr[1] ""
 
-#: includes/PartialPayment.php:378
+#: includes/PartialPayment.php:405
 msgid "%s order status changed to Partial Payment."
 msgid_plural "%s order statuses changed to Partial Payment."
 msgstr[0] ""
@@ -972,7 +996,7 @@ msgstr ""
 msgid "weDevs + saidur"
 msgstr ""
 
-#: includes/PartialPayment.php:305 includes/PartialPayment.php:325
+#: includes/PartialPayment.php:332 includes/PartialPayment.php:352
 msgctxt "Order status"
 msgid "Partially Paid"
 msgstr ""

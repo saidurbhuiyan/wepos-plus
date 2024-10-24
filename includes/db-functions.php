@@ -4,13 +4,17 @@
  * Insert partial payment stat
  * @param $order_id
  * @param $paid
- *
+ * @param int $refund
  * @return int|WP_Error
  */
-function insert_partial_payment_stat($order_id, $paid) {
+function insert_partial_payment_stat($order_id, $paid, $refund = 0) {
 	global $wpdb;
+
+    if (!defined('PARTIAL_PAYMENT_TABLE')) {
+        return new WP_Error('db_table_error', 'Partial payment table constant not defined.');
+    }
+
 	$table_name = $wpdb->prefix . PARTIAL_PAYMENT_TABLE;
-    $table_name =  esc_sql($table_name);
 
 	$result = $wpdb->insert(
 		$table_name,
@@ -18,11 +22,13 @@ function insert_partial_payment_stat($order_id, $paid) {
 			'order_id' => $order_id,
 			'paid' => $paid,
 			'date_created' => current_time('mysql'),
+            'refund' => $refund
 		),
 		array(
 			'%d',
 			'%f',
 			'%s',
+            '%f'
 		)
 	);
 
@@ -36,13 +42,13 @@ function insert_partial_payment_stat($order_id, $paid) {
 /**
  * Get partial payment stats
  * @param $order_id
- *
+ * @param string $orderBy
+ * @param string $order
  * @return array|WP_Error
  */
 function get_partial_payment_stats($order_id, $orderBy = 'ID', $order = 'DESC') {
 	global $wpdb;
 	$table_name = $wpdb->prefix . PARTIAL_PAYMENT_TABLE;
-    $table_name =  esc_sql($table_name);
 
 	$allowed_columns = array('ID', 'paid', 'date_created');
 	$orderBy = in_array( $orderBy, $allowed_columns, true ) ? $orderBy : 'ID';
@@ -60,12 +66,12 @@ function get_partial_payment_stats($order_id, $orderBy = 'ID', $order = 'DESC') 
 
 
 /**
- * Get total paid
+ * Get total paid amount of an order from database
  * @param $order_id
  *
  * @return string|WP_Error|null
  */
-function get_total_paid($order_id) {
+function get_total_paid_query($order_id) {
 	global $wpdb;
 	$table_name = $wpdb->prefix . PARTIAL_PAYMENT_TABLE;
     $table_name =  esc_sql($table_name);
@@ -81,6 +87,21 @@ function get_total_paid($order_id) {
 }
 
 /**
+ * Get total paid amount from partial payment results
+ * @param $partial_payment_results
+ * @return void
+ */
+function get_total_paid($partial_payment_results)
+{
+    $total_paid = 0;
+    foreach ($partial_payment_results as $partial_payment_result) {
+        $total_paid += $partial_payment_result->paid;
+    }
+    return $total_paid;
+
+}
+
+/**
  * Get due amount
  * @param $order_id
  * @param $total_amount
@@ -88,7 +109,7 @@ function get_total_paid($order_id) {
  * @return int|string|WP_Error|null
  */
 function get_due_amount($order_id, $total_amount) {
-	$total_paid = get_total_paid($order_id);
+	$total_paid = get_total_paid_query($order_id);
 
 	if (is_wp_error($total_paid)) {
 		return $total_paid;

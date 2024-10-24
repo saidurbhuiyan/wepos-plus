@@ -113,6 +113,7 @@ class Installer {
     private function create_partial_payment_table_if_not_exists() {
         //file where sql queries are used to create table
         require_once(WEPOS_INCLUDES . '/Admin/Updates/upgrade-1.3.0.php');
+        require_once(WEPOS_INCLUDES . '/Admin/Updates/upgrade-1.3.6.php');
     }
 
     /**
