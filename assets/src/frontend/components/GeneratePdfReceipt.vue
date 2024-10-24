@@ -385,7 +385,7 @@ export default {
         let phoneNumber = this.printdata.billing.phone ?? '';
         let setPhoneNumber = '';
 
-        if (phoneNumber === '') {
+        if (phoneNumber === '' || confirm("Do you want to use another phone number to send the receipt?")) {
           setPhoneNumber = prompt("Please enter the phone number with country code (example +351) to send the receipt:");
         }
 

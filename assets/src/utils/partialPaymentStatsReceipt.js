@@ -425,17 +425,17 @@ async function generateReceiptPDF(printdata, settings, partialPaymentId,actionTy
 	// share to whatsapp
 	if (actionType === 'share-whatsapp') {
 		const whatsappMessage = encodeURIComponent( "Check out Your Order Receipt: " + pdfUrl );
-		actionUrl             = `https://api.whatsapp.com / send ? text = ${whatsappMessage}`;
+		actionUrl             = `https://api.whatsapp.com/send?text=${whatsappMessage}`;
 		if (phoneNumber && phoneNumber !== '') {
 			phoneNumber = phoneNumber.replaceAll( '+', '' );
-			actionUrl  += ` & phone = ${phoneNumber}`;
+			actionUrl  += `&phone=${phoneNumber}`;
 		}
 	}
 
 	if (actionType === 'share-email') {
 		const emailSubject = encodeURIComponent( "Your Order Receipt" );
 		const emailBody    = encodeURIComponent( "Hello,\n\nPlease check out your order receipt attached: " + pdfUrl );
-		actionUrl          = `mailto: ? subject = ${emailSubject} & body = ${emailBody}`;
+		actionUrl          = `mailto:?subject=${emailSubject}&body=${emailBody}`;
 	}
 
 	// Open PDF in new tab in preferred action
@@ -541,11 +541,14 @@ jQuery( document ).ready(
 					const parser    = new DOMParser(),
 						dom         = parser.parseFromString( partialPaymentData.settings.wepos_receipts.receipt_header, "text/html" );
 					let phoneNumber = printData.billing.phone ?? '';
-					if (actionType === 'share-whatsapp' && phoneNumber === '') {
-						const setPhoneNumber = prompt( "Please enter the phone number with country code (example +351) to send the receipt:" );
-						if (setPhoneNumber) {
-							phoneNumber = setPhoneNumber.replaceAll( /\s/g,'' );
+					if (actionType === 'share-whatsapp') {
+						if(phoneNumber === ''|| confirm("Do you want to use another phone number to send the receipt?")) {
+							const setPhoneNumber = prompt( "Please enter the phone number with country code (example +351) to send the receipt:" );
+							if (setPhoneNumber) {
+								phoneNumber = setPhoneNumber.replaceAll( /\s/g,'' );
+							}
 						}
+
 					}
 
 					if (actionType !== 'share-whatsapp' || (actionType === 'share-whatsapp' && phoneNumber !== '')) {
