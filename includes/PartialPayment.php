@@ -83,7 +83,11 @@ class PartialPayment
 
 		$order = wc_get_order($order);
 
-		if ($order && $order->get_status() === 'partial') {
+        $paid = get_total_paid_query($order->get_id());
+        $due = $order->get_remaining_refund_amount() - $paid;
+        $due = (float)number_format($due, 2, '.', '');
+
+        if ($order && $order->get_status() === 'partial' && $due > 0) {
 			add_meta_box(
 				'partial_payment_meta_box',
 				'Pay The Due Amount',
@@ -204,6 +208,7 @@ class PartialPayment
 
 
 		$due = $order->get_meta('_wepos_cash_payment_type') === 'partial' ? $order->get_remaining_refund_amount() - $paid : 0;
+        $paid = $order->get_remaining_refund_amount() >= $paid  ? $paid : $order->get_remaining_refund_amount();
 
 		$html = '<tfoot>';
 		if ($due > 0) {
@@ -433,11 +438,11 @@ class PartialPayment
 		// Calculate due amount
 		$paid = get_total_paid_query($order_id);
 		$due = $order->get_remaining_refund_amount() - $paid;
+        $due = (float)number_format($due, 2, '.', '');
 
 		// Output the input field
 		echo '<div id="woocommerce-form-partial-payment">
         <fieldset>
-        ' . (!is_admin() && $due > 0 ? "<legend>Pay The Due Amount</legend>" : "") . '
           <p class="woocommerce-form-row woocommerce-form-row--wide form-row form-row-wide">
                 <label for="partial_payment_amount">Partial Payment Amount</label>
                 <input class="woocommerce-Input woocommerce-Input--number input-number" type="number" step="0.01" min="1" max="' . esc_attr($due) . '" id="partial_payment_amount" name="partial_amount" value="' . esc_attr($due) . '" />

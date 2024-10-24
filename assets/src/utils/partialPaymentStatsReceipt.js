@@ -337,6 +337,7 @@ async function generateReceiptPDF(printdata, settings, partialPaymentId,actionTy
 	}
 
 	// Refunded Total
+	const total_paid = parseFloat(printdata.total) - parseFloat(printdata.total_refund);
 	if (printdata.total_refund > 0) {
 		yPosition += 5;
 		doc.text( `Total Refunded:`, 11, yPosition );
@@ -344,7 +345,7 @@ async function generateReceiptPDF(printdata, settings, partialPaymentId,actionTy
 
 		yPosition += 5;
 		doc.text( `Net Payment:`, 11, yPosition );
-		doc.text( formatPrice( printdata.total - printdata.total_refund ), 198, yPosition, {align: 'right'} );
+		doc.text( formatPrice( total_paid ), 198, yPosition, {align: 'right'} );
 
 	}
 
@@ -356,9 +357,10 @@ async function generateReceiptPDF(printdata, settings, partialPaymentId,actionTy
 		yPosition += 10;
 
 		// total Paid
+		const total_partial_paid = parseFloat(printdata.total_partial_paid) > total_paid ? total_paid : printdata.total_partial_paid;
 		doc.setFont( "Helvetica", "bold" );
 		doc.text( 'Total Paid:', 10, yPosition );
-		doc.text( formatPrice( printdata.total_partial_paid ), 198, yPosition, {align: 'right'} );
+		doc.text( formatPrice( total_partial_paid ), 198, yPosition, {align: 'right'} );
 
 	if (printdata.payment_method === 'wepos_cash' && printdata.meta_data.some( (data) => data.key === '_wepos_cash_payment_type' && data.value === 'partial' ) && printdata.total_partial_due > 0) {
 		// total Due

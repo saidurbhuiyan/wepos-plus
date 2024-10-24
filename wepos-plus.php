@@ -77,7 +77,7 @@ final class WePOS {
      *
      * @var string
      */
-    public $version = '1.3.2';
+    public $version = '1.3.6';
 
     /**
      * Holds various class instances
