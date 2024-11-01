@@ -90,7 +90,7 @@
                         </td>
                     </tr>
                     <tr class="cart-meta-data">
-                        <td colspan="2" class="name">
+                        <td colspan="3" class="name">
                             {{ __( 'Subtotal', 'wepos' ) }}
                             <span class="metadata" v-if="settings.woo_tax.wc_tax_display_cart == 'incl'">
                                 {{ __( 'Including Tax', 'wepos' ) }}
@@ -99,53 +99,53 @@
                         <td class="price">{{ formatPrice( printdata.subtotal ) }}</td>
                     </tr>
                     <tr v-if="hasFixedProductDiscount()" class="cart-meta-data">
-                      <td colspan="2" class="name">{{ __( 'Discount', 'wepos' ) }}</td>
+                      <td colspan="3" class="name">{{ __( 'Discount', 'wepos' ) }}</td>
                       <td class="price">-{{ formatPrice( Math.abs(  totalFixedProductDiscount()  ) ) }}</td>
                     </tr>
                     <tr v-else v-for="(fee,key) in printdata.coupon_lines" class="cart-meta-data">
-                        <td colspan="2" class="name">{{ __( 'Discount', 'wepos' ) }} <span class="metadata">{{ fee.discount_type == 'percent' ? fee.value + '%' : formatPrice( fee.value ) }}</span></td>
+                        <td colspan="3" class="name">{{ __( 'Discount', 'wepos' ) }} <span class="metadata">{{ fee.discount_type == 'percent' ? fee.value + '%' : formatPrice( fee.value ) }}</span></td>
                         <td class="price">-{{ formatPrice( Math.abs( fee.total ) ) }}</td>
                     </tr>
                     <tr v-for="(fee,key) in printdata.fee_lines" class="cart-meta-data">
-                        <td colspan="2" class="name">{{ __( 'Fee', 'wepos' ) }} <span class="metadata">{{ fee.fee_type == 'percent' ? fee.value + '%' : formatPrice( fee.value ) }}</span></td>
+                        <td colspan="3" class="name">{{ __( 'Fee', 'wepos' ) }} <span class="metadata">{{ fee.fee_type == 'percent' ? fee.value + '%' : formatPrice( fee.value ) }}</span></td>
                         <td class="price">{{ formatPrice( Math.abs( fee.total ) ) }}</td>
                     </tr>
                     <tr v-if="printdata.taxtotal">
-                        <td colspan="2" class="name">{{ settings.woo_tax.wc_tax_display_cart === 'incl' && settings.wepos_general.enable_fee_tax === 'yes' ? __( 'Fee Tax', 'wepos' ) : __( 'Tax', 'wepos' ) }}</td>
+                        <td colspan="3" class="name">{{ settings.woo_tax.wc_tax_display_cart === 'incl' && settings.wepos_general.enable_fee_tax === 'yes' ? __( 'Fee Tax', 'wepos' ) : __( 'Tax', 'wepos' ) }}</td>
                         <td class="price">{{ formatPrice(printdata.taxtotal) }}</td>
                     </tr>
                     <tr>
-                        <td colspan="2" class="name">{{ __( 'Order Total', 'wepos' ) }}</td>
+                        <td colspan="3" class="name">{{ __( 'Order Total', 'wepos' ) }}</td>
                         <td class="price">{{ formatPrice(printdata.ordertotal) }}</td>
                     </tr>
                     <tr class="divider">
-                        <td colspan="3"></td>
+                        <td colspan="4"></td>
                     </tr>
                     <tr>
-                        <td colspan="2">{{ __( 'Vendor Type', 'wepos' ) }}</td>
+                        <td colspan="3">{{ __( 'Vendor Type', 'wepos' ) }}</td>
                         <td class="price">{{ printdata.vendor_type }}</td>
                     </tr>
                     <tr>
-                        <td colspan="2">{{ __( 'Payment method', 'wepos' ) }}</td>
+                        <td colspan="3">{{ __( 'Payment method', 'wepos' ) }}</td>
                         <td class="price">{{ printdata.gateway.title || '' }}</td>
                     </tr>
                     <tr>
                       {{ /* partial payment */}}
-                      <td colspan="2">{{ __( 'Payment Type', 'wepos' ) }}</td>
+                      <td colspan="3">{{ __( 'Payment Type', 'wepos' ) }}</td>
                       <td class="price">{{ printdata.paymenttype === 'partial' ? 'Partial Payment' : 'Full Payment' }}</td>
                     </tr>
                     <template v-if="printdata.gateway.id='wepos_cash'">
                         <tr>
-                            <td colspan="2">{{ __( 'Cash Given', 'wepos' ) }}</td>
+                            <td colspan="3">{{ __( 'Cash Given', 'wepos' ) }}</td>
                             <td class="price">{{ formatPrice( printdata.cashamount ) }}</td>
                         </tr>
                         {{ /* partial payment */}}
                       <tr v-if="printdata.paymenttype === 'partial' && printdata.dueamount > 0">
-                        <td colspan="2">{{ __( 'Due Amount', 'wepos' ) }}</td>
+                        <td colspan="3">{{ __( 'Due Amount', 'wepos' ) }}</td>
                         <td class="price">{{ formatPrice( printdata.dueamount ) }}</td>
                       </tr>
                         <tr v-else >
-                            <td colspan="2">{{ __( 'Change Money', 'wepos' ) }}</td>
+                            <td colspan="3">{{ __( 'Change Money', 'wepos' ) }}</td>
                             <td class="price">{{ formatPrice( printdata.changeamount ) }}</td>
                         </tr>
                     </template>
@@ -227,7 +227,7 @@ export default {
             .filter(coupon => typeof coupon.product_ids !== 'undefined' && coupon.product_ids.includes(productId));
 
         const totalDiscount  = discount && discount.length > 0 ? discount[0] : {total: '0.00', value: '0.00'};
-        return parseFloat(totalDiscount.total).toFixed(2) +' '+ this.wepos.currency_format_symbol+' (' + quantity + 'x' + totalDiscount.value  + ')';
+        return parseFloat(totalDiscount.total).toFixed(2) +' '+ this.wepos.currency_format_symbol+ ( Math.abs(parseFloat(totalDiscount.total)).toFixed(2) !== parseFloat(totalDiscount.value).toFixed(2) ? ' (' + quantity + 'x' + totalDiscount.value  + ')': '');
       },
 
       receiptInfo(settingReceipt){

@@ -150,11 +150,12 @@ export default {
     // Add Line Items
     doc.setFont("Helvetica", "bold");
     doc.text('Product', 11, yPosition);
-    doc.text('Cost', 100, yPosition, {align: 'center'});
+    doc.text('Price', 100, yPosition, {align: 'center'});
     doc.text('Quantity', 145, yPosition, {align: 'center'});
     doc.text('Total', 198, yPosition, {align: 'right'});
 
     printdata.line_items.forEach(item => {
+      doc.setFontSize( 8 );
       yPosition += 5;
       let price = item.vendor_type === 'local'? item.local_price : item.regular_price
       price = item.vendor_type === 'export' ? item.export_price : price
@@ -165,14 +166,14 @@ export default {
       doc.text(this.formatPrice(price), 100, yPosition, {align: 'center'});
       doc.text(`${item.quantity}`, 145, yPosition, {align: 'center'});
       doc.text(this.formatPrice(item.quantity*price), 198, yPosition, {align: 'right'});
+      doc.setFontSize(7);
 
         // Add attributes
       if (item.attribute && item.attribute.length > 0) {
-        yPosition += 2;
-        doc.setFontSize(7);
         let previousWidth = 12;
         item.attribute.forEach(attribute_item => {
           if(attribute_item?.key?.startsWith("pa_")){
+            yPosition += 2;
             // Set color for the display key
             doc.setTextColor(117, 133, 152); // Gray color
             doc.text(`${attribute_item.name}: `, previousWidth, yPosition, { baseline: 'top' });
@@ -206,7 +207,7 @@ export default {
       if (discount && discount.length > 0) {
         yPosition += 5;
         doc.setTextColor(117, 133, 152);
-        doc.text(`Discount: ${parseFloat(discount[0].total).toFixed(2) + ' ' + wepos.currency_format_symbol +' (' + item.quantity + 'x' + discount[0].value  + ')'}`, 12, yPosition);
+        doc.text(`Discount: ${parseFloat(discount[0].total).toFixed(2) + ' ' + wepos.currency_format_symbol + (Math.abs(parseFloat(discount[0].total)).toFixed(2) !== parseFloat(discount[0].value).toFixed(2) ? ' (' + item.quantity + 'x' + discount[0].value  + ')': '')}`, 12, yPosition);
       }
       doc.setTextColor(0, 0, 0);
     });

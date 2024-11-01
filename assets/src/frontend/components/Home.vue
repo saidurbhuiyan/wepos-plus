@@ -335,8 +335,8 @@
                   </td>
                 </tr>
 
-                <tr v-if="item.editQuantity" class="update-quantity-wrap">
-                  <td colspan="1" v-if="!hasExpiryQuantity(item)">
+                <tr v-if="item.editQuantity && !hasExpiryQuantity(item)" class="update-quantity-wrap">
+                  <td colspan="6">
                     <span class="qty">{{ __('Quantity', 'wepos') }}</span>
                     <span class="qty-number">
                       <input type="number" min="1" step="1" v-model="item.quantity">
@@ -346,15 +346,22 @@
                       <a href="#" class="minus" @click.prevent="removeQuantity( key )">&#45;</a>
                     </span>
                   </td>
-                  <td :colspan="hasExpiryQuantity(item) ? 6 : 5" :style="hasExpiryQuantity(item) ? '' : 'text-align: center;'">
-                    <template v-if="!hasProductDiscount(item.product_id)">
-                      <span class="qty">{{ __('Discount per Quantity', 'wepos') }}</span>
+                  </tr>
+                  <tr v-if="item.editQuantity && !hasProductDiscount(item.product_id)" class="update-quantity-wrap">
+                    <td colspan="2">
+                      <span class="qty">{{ __('Fixed Discount Type', 'wepos') }}</span>
+                      <select id="search_by" name="discount_type" v-model="selectedDiscountType">
+                        <option value disabled>Select Type</option>
+                        <option value="fixed_product" selected>Per Quantity</option>
+                        <option value="fixed_product_item">On Product</option>
+                      </select>
+                    </td>
+                    <td colspan="4">
+                      <span class="qty">{{ __('Discount', 'wepos') }}</span>
                       <span class="input-addon">
                         <span class="currency">{{ wepos.currency_format_symbol }}</span>
-                        <input type="number" min="1" step="1" @change="(e) => e.target.value > 0 && setDiscount(e.target.value,'fixed_product', item.product_id)">
+                        <input type="number" min="1" step="1" @change="(e) => e.target.value > 0 && setDiscount(e.target.value,selectedDiscountType, item.product_id)">
                       </span>
-
-                    </template>
                   </td>
                 </tr>
               </template>
@@ -391,7 +398,7 @@
                   <td class="label">{{ __('Discount', 'wepos') }}</td>
                   <td class="price">&minus;{{ formatPrice(Math.abs(totalFixedProductDiscount())) }}</td>
                   <td class="action"><span class="flaticon-cancel-music"
-                                           @click="() => cartdata.coupon_lines.map((fee,key) => removeFeeLine(key))"></span>
+                                           @click="() => cartdata.coupon_lines.map((fee,key) => removeCouponLine(key))"></span>
                   </td>
                 </tr>
                 <tr v-else class="cart-meta-data" v-for="(fee,key) in cartdata.coupon_lines">
@@ -914,6 +921,7 @@ export default {
       /* partial payment */
       paymentType: 'full',
       selectedExpiryKey: null,
+      selectedDiscountType: 'fixed_product',
       AvailableExpiryData: null,
       selectedVendorType: 'regular',
 
@@ -1308,7 +1316,7 @@ export default {
       const discount = this.cartdata.coupon_lines
           .filter(coupon => typeof coupon.product_ids !== 'undefined' && coupon.product_ids.includes(productId));
       const totalDiscount  = discount && discount.length > 0 ? discount[0] : {total: '0.00', value: '0.00'};
-     return parseFloat(totalDiscount.total).toFixed(2) +' '+ this.wepos.currency_format_symbol+' (' + quantity + 'x' + totalDiscount.value  + ')';
+     return parseFloat(totalDiscount.total).toFixed(2) +' '+ this.wepos.currency_format_symbol+ ( Math.abs(parseFloat(totalDiscount.total)).toFixed(2) !== parseFloat(totalDiscount.value).toFixed(2) ? ' (' + quantity + 'x' + totalDiscount.value  + ')':'');
     },
 
     getProductStockStatus(product) {
@@ -1339,7 +1347,6 @@ export default {
           .filter(coupon => coupon.discount_type === 'fixed_product')
           .map(coupon => parseFloat(coupon.total))
           .reduce((sum, value) => sum + value, 0).toFixed(2);
-
       return discount && discount.length > 0 ? discount : '0.00';
     },
 
@@ -1369,8 +1376,13 @@ export default {
         product_ids: productIds,
       }
 
-      if ('percent' === discount_type || 'fixed_product' === discount_type) {
+      if ('percent' === discount_type || 'fixed_product' === discount_type ) {
         discountdata.discount_type = discount_type;
+      }
+
+      if('fixed_product_item' === discount_type){
+        discountdata.discount_type = 'fixed_product';
+        discountdata.limit_usage_to_x_items = 1
       }
 
       wepos.api.post(wepos.rest.root + wepos.rest.posversion + '/coupons', discountdata)

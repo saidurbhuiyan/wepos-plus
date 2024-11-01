@@ -246,6 +246,7 @@ export default {
                 isEdit: false,
                 value: discountData.value.amount,
                 discount_type: discountData.value.discount_type,
+                discount_on_item : discountData.value.limit_usage_to_x_items === 1,
                 tax_status: 'incl' !== state.settings.woo_tax.wc_tax_display_shop ? 'taxable' : 'none',
                 tax_class: '',
                 total: 0,
@@ -306,7 +307,7 @@ export default {
                             const productQuantity = state.cartdata.line_items
                                 .filter(product => item.product_ids?.includes(product.product_id))
                                 .reduce((total, product) => total + product.quantity, 0);
-                            state.cartdata.coupon_lines[key].total = `-${discountValue * productQuantity}`;
+                            state.cartdata.coupon_lines[key].total = `-${discountValue * (item.discount_on_item ? 1 : productQuantity)}`;
                         } else {
                             state.cartdata.coupon_lines[key].total = `-${discountValue}`;
                         }

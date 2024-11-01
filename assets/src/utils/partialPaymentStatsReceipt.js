@@ -136,13 +136,14 @@ async function generateReceiptPDF(printdata, settings, partialPaymentId,actionTy
 	// Add Line Items
 	doc.setFont( "Helvetica", "bold" );
 	doc.text( 'Product', 11, yPosition );
-	doc.text( 'Cost', 100, yPosition, {align: 'center'} );
+	doc.text( 'Price', 100, yPosition, {align: 'center'} );
 	doc.text( 'Quantity', 145, yPosition, {align: 'center'} );
 	doc.text( 'Total', 198, yPosition, {align: 'right'} );
 
 	const expiryData = printdata.meta_data ?.find( item => item.key === '_wepos_product_expiry_data' )?.value;
 	printdata.line_items.forEach(
 		item => {
+			doc.setFontSize( 8 );
 			yPosition   += 5;
 			doc.setFont( "Helvetica", "bold" );
 			doc.text( item.name, 11, yPosition );
@@ -150,14 +151,14 @@ async function generateReceiptPDF(printdata, settings, partialPaymentId,actionTy
 			doc.text( formatPrice( item.price ), 100, yPosition, {align: 'center'} );
 			doc.text( `${item.quantity}`, 145, yPosition, {align: 'center'} );
 			doc.text( formatPrice( item.subtotal ), 198, yPosition, {align: 'right'} );
+			doc.setFontSize( 7 );
 			// Add attributes
 			if (item.meta_data && item.meta_data.length > 0) {
-				yPosition += 2;
-				doc.setFontSize( 7 );
 				let previousWidth = 12;
 				item.meta_data.forEach(
 					attribute_item => {
 						if (attribute_item.key.startsWith( "pa_" )) {
+							yPosition += 2;
 							// Set color for the display key
 							doc.setTextColor( 117, 133, 152 ); // Gray color
 							doc.text( `${attribute_item.display_key}: `, previousWidth, yPosition, { baseline: 'top' } );
@@ -191,12 +192,13 @@ async function generateReceiptPDF(printdata, settings, partialPaymentId,actionTy
 			}
 			const itemTotal    = parseFloat( item.total );
 			const itemSubtotal = parseFloat( item.subtotal );
-			const discount     = itemSubtotal - itemTotal;
-			const perDiscount  = (discount / item.quantity).toFixed( 2 );
+			const discount     = (itemSubtotal - itemTotal).toFixed( 2 );
+			const coupon = printdata.coupon_lines?.find( coupon => parseFloat(coupon.discount) === parseFloat( discount ) );
+			const perDiscount  = (coupon?.nominal_amount ?? (discount / item.quantity)).toFixed( 2 );
 			if (discount > 0) {
 				yPosition += 5;
 				doc.setTextColor( 117, 133, 152 );
-				doc.text( `Discount: -${formatPrice( discount.toFixed( 2 ) ) + ' (' + item.quantity + 'x' + perDiscount + ')'}`, 12, yPosition );
+				doc.text( `Discount: -${formatPrice( discount ) + (discount !== perDiscount ?' (' + item.quantity + 'x' + perDiscount + ')': '')}`, 12, yPosition );
 			}
 			doc.setTextColor( 0, 0, 0 );
 		}
