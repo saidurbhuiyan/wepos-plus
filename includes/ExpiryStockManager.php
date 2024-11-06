@@ -36,6 +36,7 @@ class ExpiryStockManager
         if ($expiryMetaKey !== false && !empty($data["meta_data"][$expiryMetaKey]['value'])) {
             $result = [];
             $expiryData = explode(",", $data["meta_data"][$expiryMetaKey]['value']);
+            $total_stock = 0;
 
             // Parse each expiry entry
             foreach ($expiryData as $index => $expiry) {
@@ -69,6 +70,8 @@ class ExpiryStockManager
                     'company' => $company,
                     'buying_price' => $buying_price
                 ];
+
+                $total_stock += (int)$quantity;
             }
 
             // Update the '_expiry_data' value with the formatted result
@@ -76,6 +79,13 @@ class ExpiryStockManager
 
             // Append the '_expiry_rule' metadata
             $data["meta_data"][] = ['key' => '_expiry_rule', 'value' => 'yes'];
+
+            // update the 'manage_stock'
+            $data['manage_stock'] = 1;
+
+            // update the 'stock_quantity'
+            $data['stock_quantity'] = $total_stock;
+            error_log(print_r($data, true));
         }
 
         return $data;
