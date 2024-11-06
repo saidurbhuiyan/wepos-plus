@@ -115,7 +115,6 @@ return [
 	__( 'Prepared by', 'wepos' ),
 	__( 'Delivered by', 'wepos' ),
 	__( 'Reviewed by', 'wepos' ),
-	__( 'No product found', 'wepos' ),
 	__( 'Scan your product', 'wepos' ),
 	__( 'Search product by typing', 'wepos' ),
 	__( 'Vendors', 'wepos' ),

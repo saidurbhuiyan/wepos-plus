@@ -5,9 +5,9 @@
   </div>
   <div id="wepos-main">
     <div class="content-product">
-      <div class="top-panel wepos-clearfix">
+      <div v-if="!this.productLoading" class="top-panel wepos-clearfix">
         <div class="search-bar">
-          <product-search @onProductAdded="addToCart" :products="products" :settings="settings"></product-search>
+          <product-search @onProductAdded="addToCart" :products="products" :settings="settings" @searchableProduct="(product) => searchedProducts = product"></product-search>
         </div>
         <div class="category">
           <multiselect
@@ -467,14 +467,14 @@
                                                              v-model="feeData.tax_status" :true-value="'taxable'"
                                                              :false-value="'none'"> {{ __('Taxable', 'wepos') }}</label>
                           <select class="fee-tax-class" v-model="feeData.tax_class"
-                                  v-if="feeData.tax_status=='taxable'">
+                                  v-if="feeData.tax_status==='taxable'">
                             <option v-for="feeTax in availableTax"
-                                    :value="feeTax.class == 'standard' ? '' : feeTax.class">
+                                    :value="feeTax.class === 'standard' ? '' : feeTax.class">
                               {{ unSanitizeString(feeTax.class) }} - {{ feeTax.percentage_rate }}
                             </option>
                           </select>
                         </template>
-                        <button :disabled="feeData.name == ''" @click.prevent="saveFee(key)">{{
+                        <button :disabled="feeData.name === ''" @click.prevent="saveFee(key)">{{
                             __('Apply', 'wepos')
                           }}
                         </button>
@@ -924,6 +924,7 @@ export default {
       selectedDiscountType: 'fixed_product',
       AvailableExpiryData: null,
       selectedVendorType: 'regular',
+      searchedProducts : false,
 
     }
   },
@@ -947,7 +948,9 @@ export default {
       }
     },
     getFilteredProduct() {
-      if (this.$route.query.category !== undefined) {
+      if(this.searchedProducts){
+        return this.searchedProducts
+      }else if (this.$route.query.category !== undefined) {
         return this.products.filter((product) => {
           var foundCat = weLo_.find(product.categories, {id: parseInt(this.$route.query.category)});
           return foundCat != undefined && Object.keys(foundCat).length > 0;
@@ -1020,6 +1023,7 @@ export default {
         this.selectedCategory = weLo_.find(this.categories, {id: parseInt(this.$route.query.category)})
       }
     },
+
     'selectedGateway'(newdata, olddata) {
       var gateway = weLo_.find(this.availableGateways, {'id': newdata});
       this.$store.dispatch('Order/setGatewayAction', gateway);
@@ -1794,7 +1798,7 @@ export default {
             height: 35px;
             border: 1px solid #E9EDF0;
             line-height: 10px;
-            padding-right: 120px;
+            padding-right: 130px;
             padding-left: 32px;
             box-sizing: border-box;
             border-radius: 3px;
@@ -1829,6 +1833,18 @@ export default {
 
             &:before {
               font-size: 14px;
+            }
+          }
+
+          a.search-clear {
+            position: absolute;
+            right: 130px;
+            top: 9px;
+            color: #999DAC;
+
+            span:before {
+              font-size: 13px;
+
             }
           }
 
