@@ -4,10 +4,11 @@
  * Insert partial payment stat
  * @param $order_id
  * @param $paid
+ * @param string $method
  * @param int $refund
  * @return int|WP_Error
  */
-function insert_partial_payment_stat($order_id, $paid, $refund = 0) {
+function insert_partial_payment_stat($order_id, $paid, $method = 'Cash', $refund = 0) {
 	global $wpdb;
 
     if (!defined('PARTIAL_PAYMENT_TABLE')) {
@@ -22,13 +23,15 @@ function insert_partial_payment_stat($order_id, $paid, $refund = 0) {
 			'order_id' => $order_id,
 			'paid' => $paid,
 			'date_created' => current_time('mysql'),
-            'refund' => $refund
+            'refund' => $refund,
+            'method' => $method
 		),
 		array(
 			'%d',
 			'%f',
 			'%s',
-            '%f'
+            '%f',
+            '%s'
 		)
 	);
 

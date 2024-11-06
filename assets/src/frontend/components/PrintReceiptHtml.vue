@@ -134,9 +134,9 @@
                       <td colspan="3">{{ __( 'Payment Type', 'wepos' ) }}</td>
                       <td class="price">{{ printdata.paymenttype === 'partial' ? 'Partial Payment' : 'Full Payment' }}</td>
                     </tr>
-                    <template v-if="printdata.gateway.id='wepos_cash'">
+                    <template v-if="printdata.gateway.id === 'wepos_cash' || printdata.gateway.id ==='wepos_card'">
                         <tr>
-                            <td colspan="3">{{ __( 'Cash Given', 'wepos' ) }}</td>
+                            <td colspan="3">{{ __( printdata.gateway.id='wepos_cash' ? 'Cash Given' : 'Paid Amount', 'wepos' ) }}</td>
                             <td class="price">{{ formatPrice( printdata.cashamount ) }}</td>
                         </tr>
                         {{ /* partial payment */}}

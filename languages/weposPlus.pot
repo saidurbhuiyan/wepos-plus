@@ -2,9 +2,9 @@
 # This file is distributed under the GPL2.
 msgid ""
 msgstr ""
-"Project-Id-Version: wePOSPlus - Point Of Sale (POS) for WooCommerce 1.3.6\n"
+"Project-Id-Version: wePOSPlus - Point Of Sale (POS) for WooCommerce 1.3.8\n"
 "Report-Msgid-Bugs-To: https://wordpress.org/support/plugin/wepos-plus\n"
-"POT-Creation-Date: 2024-11-01 09:07:54+00:00\n"
+"POT-Creation-Date: 2024-11-06 04:35:27+00:00\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
@@ -246,7 +246,7 @@ msgid "Total Price"
 msgstr ""
 
 #: assets/src/frontend/components/Home.vue:290
-#: includes/ExpiryStockManager.php:287 languages/wepos.php:44
+#: includes/ExpiryStockManager.php:297 languages/wepos.php:44
 msgid "Expiry"
 msgstr ""
 
@@ -442,9 +442,8 @@ msgstr ""
 msgid "No gateway found"
 msgstr ""
 
-#: assets/src/frontend/components/Home.vue:792 includes/Gateways/Cash.php:33
-#: includes/Gateways/Cash.php:55 languages/wepos.php:84
-msgid "Cash"
+#: assets/src/frontend/components/Home.vue:792
+msgid "Amount"
 msgstr ""
 
 #: assets/src/frontend/components/Home.vue:800 languages/wepos.php:85
@@ -484,7 +483,7 @@ msgstr ""
 
 #: assets/src/frontend/components/PrintReceiptHtml.vue:29
 #: assets/src/frontend/components/PrintReceiptHtml.vue:125
-#: includes/PartialPayment.php:285
+#: includes/PartialPayment.php:287
 msgid "Vendor Type"
 msgstr ""
 
@@ -517,13 +516,8 @@ msgstr ""
 msgid "Payment Type"
 msgstr ""
 
-#: assets/src/frontend/components/PrintReceiptHtml.vue:139
-#: languages/wepos.php:97
-msgid "Cash Given"
-msgstr ""
-
 #: assets/src/frontend/components/PrintReceiptHtml.vue:144
-#: includes/PartialPayment.php:280 languages/wepos.php:98
+#: includes/PartialPayment.php:282 languages/wepos.php:98
 msgid "Due Amount"
 msgstr ""
 
@@ -629,19 +623,19 @@ msgstr ""
 msgid "Setting has been saved successfully."
 msgstr ""
 
-#: includes/Admin/Updates.php:77
+#: includes/Admin/Updates.php:78
 msgid "WePOS Data Update Required"
 msgstr ""
 
-#: includes/Admin/Updates.php:77
+#: includes/Admin/Updates.php:78
 msgid "We need to update your install to the latest version"
 msgstr ""
 
-#: includes/Admin/Updates.php:78
+#: includes/Admin/Updates.php:79
 msgid "Run the updater"
 msgstr ""
 
-#: includes/Admin/Updates.php:83
+#: includes/Admin/Updates.php:84
 msgid ""
 "It is strongly recommended that you backup your database before proceeding. "
 "Are you sure you wish to run the updater now?"
@@ -679,12 +673,12 @@ msgstr ""
 msgid "Show POS menu in vendor dashboard"
 msgstr ""
 
-#: includes/Dokan.php:159 includes/ExpiryStockManager.php:183
+#: includes/Dokan.php:159 includes/ExpiryStockManager.php:193
 #: includes/functions.php:187 includes/functions.php:211
 msgid "Yes"
 msgstr ""
 
-#: includes/Dokan.php:160 includes/ExpiryStockManager.php:182
+#: includes/Dokan.php:160 includes/ExpiryStockManager.php:192
 #: includes/functions.php:188 includes/functions.php:212
 msgid "No"
 msgstr ""
@@ -697,37 +691,37 @@ msgstr ""
 msgid "Expiry Details (Quantity, Date, Company, Status)"
 msgstr ""
 
-#: includes/ExpiryStockManager.php:144
+#: includes/ExpiryStockManager.php:154
 msgid "Quantity Per Box"
 msgstr ""
 
-#: includes/ExpiryStockManager.php:146
+#: includes/ExpiryStockManager.php:156
 msgid "Total quantity of product per box."
 msgstr ""
 
-#: includes/ExpiryStockManager.php:163
+#: includes/ExpiryStockManager.php:173
 msgid "Expiry Alert Duration (Days)"
 msgstr ""
 
-#: includes/ExpiryStockManager.php:165
+#: includes/ExpiryStockManager.php:175
 msgid "when the email alert will be sent before the expiry date is reached"
 msgstr ""
 
-#: includes/ExpiryStockManager.php:180
+#: includes/ExpiryStockManager.php:190
 msgid "Expiry Rule"
 msgstr ""
 
-#: includes/ExpiryStockManager.php:186
+#: includes/ExpiryStockManager.php:196
 msgid ""
 "If you choose expiry rule yes, manage stock will be enabled and quantity "
 "will be based on total expiry quantity."
 msgstr ""
 
-#: includes/ExpiryStockManager.php:292
+#: includes/ExpiryStockManager.php:302
 msgid "Local Price"
 msgstr ""
 
-#: includes/ExpiryStockManager.php:293
+#: includes/ExpiryStockManager.php:303
 msgid "Export Price"
 msgstr ""
 
@@ -735,32 +729,69 @@ msgstr ""
 msgid "Point of Sale"
 msgstr ""
 
-#: includes/Gateways/Cash.php:34
-msgid "Have your customers pay with cash"
+#: includes/Gateways/Card.php:31
+msgid "Wepos Card"
 msgstr ""
 
-#: includes/Gateways/Cash.php:45
+#: includes/Gateways/Card.php:32
+msgid "Have your customers pay with card"
+msgstr ""
+
+#: includes/Gateways/Card.php:43 includes/Gateways/Cash.php:45
 msgid "Enable/Disable"
+msgstr ""
+
+#: includes/Gateways/Card.php:44
+msgid "Enable Card gateway"
+msgstr ""
+
+#: includes/Gateways/Card.php:50 includes/Gateways/Cash.php:52
+msgid "Title"
+msgstr ""
+
+#: includes/Gateways/Card.php:52 includes/Gateways/Cash.php:54
+msgid "Payment method description that the marchent see in pos checkout"
+msgstr ""
+
+#: includes/Gateways/Card.php:53
+msgid "Card"
+msgstr ""
+
+#: includes/Gateways/Card.php:57 includes/Gateways/Cash.php:59
+msgid "Description"
+msgstr ""
+
+#: includes/Gateways/Card.php:59 includes/Gateways/Cash.php:61
+msgid "Payment method description that marchent see in pos checkout page"
+msgstr ""
+
+#: includes/Gateways/Card.php:60
+msgid "Pay with card"
+msgstr ""
+
+#: includes/Gateways/Card.php:98
+msgid "Payment collected via card"
+msgstr ""
+
+#: includes/Gateways/Card.php:102
+#. translators: 1: Cash tendered amount 2: Cash change amount.
+msgid "Card tendered amount: %1$s, Change amount: %2$s"
+msgstr ""
+
+#: includes/Gateways/Cash.php:33
+msgid "Wepos Cash"
+msgstr ""
+
+#: includes/Gateways/Cash.php:34
+msgid "Have your customers pay with cash"
 msgstr ""
 
 #: includes/Gateways/Cash.php:46
 msgid "Enable cash gateway"
 msgstr ""
 
-#: includes/Gateways/Cash.php:52
-msgid "Title"
-msgstr ""
-
-#: includes/Gateways/Cash.php:54
-msgid "Payment method description that the marchent see in pos checkout"
-msgstr ""
-
-#: includes/Gateways/Cash.php:59
-msgid "Description"
-msgstr ""
-
-#: includes/Gateways/Cash.php:61
-msgid "Payment method description that marchent see in pos checkout page"
+#: includes/Gateways/Cash.php:55 languages/wepos.php:84
+msgid "Cash"
 msgstr ""
 
 #: includes/Gateways/Cash.php:62
@@ -793,44 +824,48 @@ msgid "ID"
 msgstr ""
 
 #: includes/PartialPayment.php:137
-msgid "Paid Amount"
+msgid "Method"
 msgstr ""
 
 #: includes/PartialPayment.php:138
-msgid "Total Refund"
+msgid "Paid Amount"
 msgstr ""
 
 #: includes/PartialPayment.php:139
-msgid "Total Due"
+msgid "Total Refund"
 msgstr ""
 
 #: includes/PartialPayment.php:140
-msgid "Created Date"
+msgid "Total Due"
 msgstr ""
 
 #: includes/PartialPayment.php:141
+msgid "Created Date"
+msgstr ""
+
+#: includes/PartialPayment.php:142
 msgid "Actions"
 msgstr ""
 
-#: includes/PartialPayment.php:187
+#: includes/PartialPayment.php:189
 msgid "No partial payment records found."
 msgstr ""
 
-#: includes/PartialPayment.php:253
+#: includes/PartialPayment.php:255
 msgid "Processing"
 msgstr ""
 
-#: includes/PartialPayment.php:259
+#: includes/PartialPayment.php:261
 msgid "Complete"
 msgstr ""
 
-#: includes/PartialPayment.php:342
+#: includes/PartialPayment.php:344
 msgid "Partially Paid <span class=\"count\">(%s)</span>"
 msgid_plural "Partially Paid <span class=\"count\">(%s)</span>"
 msgstr[0] ""
 msgstr[1] ""
 
-#: includes/PartialPayment.php:410
+#: includes/PartialPayment.php:412
 msgid "%s order status changed to Partial Payment."
 msgid_plural "%s order statuses changed to Partial Payment."
 msgstr[0] ""
@@ -868,9 +903,12 @@ msgstr ""
 msgid "Partial payment amount."
 msgstr ""
 
-#: includes/REST/PartialPaymentController.php:106
-#: includes/REST/PaymentController.php:127
-msgid "Partial Payment collected via cash"
+#: includes/REST/PartialPaymentController.php:68
+msgid "Partial payment method."
+msgstr ""
+
+#: includes/REST/PartialPaymentController.php:112
+msgid "Partial Payment collected via cash/card"
 msgstr ""
 
 #: includes/REST/PaymentController.php:66
@@ -883,6 +921,10 @@ msgstr ""
 
 #: includes/REST/PaymentController.php:115
 msgid "No payment gateway found for processing this payment"
+msgstr ""
+
+#: includes/REST/PaymentController.php:127
+msgid "Partial Payment collected via cash"
 msgstr ""
 
 #: includes/REST/UserActivityLoggerController.php:51
@@ -967,6 +1009,10 @@ msgstr ""
 msgid "Discount per Quantity"
 msgstr ""
 
+#: languages/wepos.php:97
+msgid "Cash Given"
+msgstr ""
+
 #: templates/woocommerce-dependency-notice.php:20
 msgid "WooCommerce Missing"
 msgstr ""
@@ -1001,7 +1047,7 @@ msgstr ""
 msgid "weDevs + saidur"
 msgstr ""
 
-#: includes/PartialPayment.php:337 includes/PartialPayment.php:357
+#: includes/PartialPayment.php:339 includes/PartialPayment.php:359
 msgctxt "Order status"
 msgid "Partially Paid"
 msgstr ""

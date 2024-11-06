@@ -276,7 +276,7 @@ async function generateReceiptPDF(printdata, settings, partialPaymentId,actionTy
 	yPosition += 5;
 	doc.setFont( "Helvetica", "normal" );
 	doc.text( 'Payment method:', 10, yPosition );
-	doc.text( printdata.payment_method_title || '', 198, yPosition, {align: 'right'} );
+	doc.text( printdata.current_payment.method || 'Cash', 198, yPosition, {align: 'right'} );
 
 	// Payment Type
 	yPosition += 5;
@@ -316,7 +316,7 @@ async function generateReceiptPDF(printdata, settings, partialPaymentId,actionTy
 		printdata.past_payment.forEach(
 			payment => {
 				yPosition += 5;
-				doc.text( formatDate( payment.date_created ), 13, yPosition );
+				doc.text( formatDate( payment.date_created ) + ' ('+ capitalizeFirstLetter(payment.method ?? 'cash')+')', 13, yPosition );
 				doc.text( formatPrice( parseFloat( payment.paid ).toFixed( 2 ) ), 198, yPosition, {align: 'right'} );
 			}
 		);
@@ -477,6 +477,12 @@ function formatDate(dateString, format = null) {
 }
 
 
+// Capitalize first letter
+function capitalizeFirstLetter(val) {
+	return String(val).charAt(0).toUpperCase() + String(val).slice(1);
+}
+
+
 // Search by ID
 function searchByID(currentID, partialPaymentStats) {
 	// Find the object with the current ID
@@ -489,7 +495,7 @@ function searchByID(currentID, partialPaymentStats) {
 
 	// Find all past items with IDs less than the current ID
 	const pastItems = partialPaymentStats.filter( item => parseInt( item.ID ) < parseInt( currentID ) )
-		.reverse();
+		.sort( ( a, b ) => parseInt(b.ID) - parseInt(a.ID) );
 
 	return {
 		currentPayment: currentItem,

@@ -57,7 +57,7 @@ class PartialPayment
     {
         $refund = wc_get_order( $refund_id );
         $refund_amount = $refund->get_amount();
-        insert_partial_payment_stat($order_id, 0, $refund_amount);
+        insert_partial_payment_stat($order_id, 0, 'Cash', $refund_amount);
 
     }
 
@@ -90,7 +90,7 @@ class PartialPayment
         if ($order && $order->get_status() === 'partial' && $due > 0) {
 			add_meta_box(
 				'partial_payment_meta_box',
-				'Pay The Due Amount',
+				'Pay The Due Amount (Partial Payment)',
 				array($this, 'add_partial_payment_input_field'),
 				$screen,
 				'side',
@@ -134,6 +134,7 @@ class PartialPayment
                 <thead>
                 <tr>
                     <th class="manage-column partial-column-id"><?php esc_html_e('ID', 'wepos'); ?></th>
+                    <th class="manage-column partial-column-payment-method"><?php esc_html_e('Method', 'wepos'); ?></th>
                     <th class="manage-column partial-column-paid-amount"><?php esc_html_e('Paid Amount', 'wepos'); ?></th>
                     <th class="manage-column partial-column-total-refund"><?php esc_html_e('Total Refund', 'wepos'); ?></th>
                     <th class="manage-column partial-column-total-due"><?php esc_html_e('Total Due', 'wepos'); ?></th>
@@ -148,6 +149,7 @@ class PartialPayment
 						?>
                         <tr>
                             <td class="partial-column-id"><?php echo esc_html($stat->ID); ?></td>
+                            <td class="partial-column-payment-method"><?php echo esc_html($stat->method); ?></td>
                             <td class="partial-column-paid-amount"><?php echo wc_price($stat->paid); ?></td>
                             <td class="partial-column-total-due"><?php echo wc_price($stat->refund??0); ?></td>
                             <td class="partial-column-total-due"><?php echo wc_price($due > 0 ? $due : 0); ?></td>
@@ -439,12 +441,23 @@ class PartialPayment
 		$paid = get_total_paid_query($order_id);
 		$due = $order->get_remaining_refund_amount() - $paid;
         $due = (float)number_format($due, 2, '.', '');
+        $available_gateways = wepos()->gateways->available_gateway();
 
 		// Output the input field
 		echo '<div id="woocommerce-form-partial-payment">
         <fieldset>
+        <p class="woocommerce-form-row woocommerce-form-row--wide form-row form-row-wide">
+                <label for="partial_payment_method">Method</label>
+                <select name="woocommerce-Input woocommerce-Input--text input-text" id="partial_payment_method">
+                ';
+        foreach ($available_gateways as $class => $path) {
+            $gateway = new $class;
+            echo '<option value="' . esc_attr($gateway->title) . '" '.($gateway->id === 'wepos_cash' ? 'selected' : '').'>' . esc_html($gateway->title) . '</option>';
+        }
+        echo '</select>
+            </p>
           <p class="woocommerce-form-row woocommerce-form-row--wide form-row form-row-wide">
-                <label for="partial_payment_amount">Partial Payment Amount</label>
+                <label for="partial_payment_amount">Amount</label>
                 <input class="woocommerce-Input woocommerce-Input--number input-number" type="number" step="0.01" min="1" max="' . esc_attr($due) . '" id="partial_payment_amount" name="partial_amount" value="' . esc_attr($due) . '" />
             </p>
             <p class="form-row form-row-wide">

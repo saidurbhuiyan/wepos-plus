@@ -297,11 +297,11 @@ export default {
     doc.text(printdata.paymenttype  === 'partial' ? 'Partial Payment' : 'Full Payment', 198, yPosition, {align: 'right'});
 
     // total Paid/Due Amount
-    if (printdata.gateway.id='wepos_cash') {
+    if (printdata.gateway.id === 'wepos_cash' || printdata.gateway.id === 'wepos_card') {
       //cash given
       yPosition += 5;
       doc.setFont("Helvetica", "normal");
-      doc.text('Cash Given:', 10, yPosition);
+      doc.text(printdata.gateway.id='wepos_cash' ?'Cash Given:' : 'Paid Amount:', 10, yPosition);
       doc.text(this.formatPrice(parseFloat(printdata.cashamount).toFixed(2)), 198, yPosition, {align: 'right'});
 
       if (printdata.paymenttype === 'partial' && printdata.dueamount > 0) {

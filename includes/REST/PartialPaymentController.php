@@ -64,6 +64,11 @@ class PartialPaymentController extends \WP_REST_Controller {
 				'type'        => 'number',
 				'required'    => true,
 			],
+            'partial_method' => [
+                'description' => __( 'Partial payment method.', 'wepos' ),
+                'type'        => 'string',
+                'required'    => true,
+            ]
 		];
 	}
 
@@ -77,6 +82,7 @@ class PartialPaymentController extends \WP_REST_Controller {
 	public function update_partial_payment( $request ) {
 		$order_id       = $request->get_param( 'order_id' );
 		$partial_amount = $request->get_param( 'partial_amount' );
+        $partial_method = $request->get_param( 'partial_method' ) ?? 'Cash';
 
 		if ( empty( $order_id ) || empty( $partial_amount ) ) {
 			return new \WP_Error( 'missing_data', 'Order ID or Partial Payment amount is missing', [ 'status' => 422 ] );
@@ -97,13 +103,13 @@ class PartialPaymentController extends \WP_REST_Controller {
 		}
 
 
-		insert_partial_payment_stat( $order_id, $partial_amount );
+		insert_partial_payment_stat( $order_id, $partial_amount, $partial_method );
 
 		$total_paid = get_total_paid_query( $order_id );
 		update_post_meta( $order_id, '_wepos_cash_paid_amount', $total_paid );
 
 		if ( $total_paid >= $order->get_total() ) {
-			$order->update_status( 'completed', __( 'Partial Payment collected via cash', 'wepos' ) );
+			$order->update_status( 'completed', __( 'Partial Payment collected via cash/card', 'wepos' ) );
 		}
 
 		return rest_ensure_response( [

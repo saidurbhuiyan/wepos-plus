@@ -1,11 +1,9 @@
 <?php
+
 namespace WeDevs\WePOS\Gateways;
 
-/**
-* Cash gateway payment for POS
-*/
-class Cash extends \WC_Payment_Gateway {
-
+class Card extends \WC_Payment_Gateway
+{
     /**
      * Constructor for the gateway.
      */
@@ -28,10 +26,10 @@ class Cash extends \WC_Payment_Gateway {
      * Setup general properties for the gateway.
      */
     protected function setup_properties() {
-        $this->id                 = 'wepos_cash';
-        $this->icon               = apply_filters( 'wepos_cash_icon', '' );
-        $this->method_title       = __( 'Wepos Cash', 'wepos' );
-        $this->method_description = __( 'Have your customers pay with cash', 'wepos' );
+        $this->id                 = 'wepos_card';
+        $this->icon               = apply_filters( 'wepos_card_icon', '' );
+        $this->method_title       = __( 'Wepos Card', 'wepos' );
+        $this->method_description = __( 'Have your customers pay with card', 'wepos' );
         $this->has_fields         = false;
     }
 
@@ -43,7 +41,7 @@ class Cash extends \WC_Payment_Gateway {
         $this->form_fields = array(
             'enabled'            => array(
                 'title'       => __( 'Enable/Disable', 'wepos' ),
-                'label'       => __( 'Enable cash gateway', 'wepos' ),
+                'label'       => __( 'Enable Card gateway', 'wepos' ),
                 'type'        => 'checkbox',
                 'description' => '',
                 'default'     => 'yes',
@@ -52,14 +50,14 @@ class Cash extends \WC_Payment_Gateway {
                 'title'       => __( 'Title', 'wepos' ),
                 'type'        => 'text',
                 'description' => __( 'Payment method description that the marchent see in pos checkout', 'wepos' ),
-                'default'     => __( 'Cash', 'wepos' ),
+                'default'     => __( 'Card', 'wepos' ),
                 'desc_tip'    => true,
             ),
             'description'        => array(
                 'title'       => __( 'Description', 'wepos' ),
                 'type'        => 'textarea',
                 'description' => __( 'Payment method description that marchent see in pos checkout page', 'wepos' ),
-                'default'     => __( 'Pay with cash', 'wepos' ),
+                'default'     => __( 'Pay with card', 'wepos' ),
                 'desc_tip'    => true,
             )
         );
@@ -97,13 +95,13 @@ class Cash extends \WC_Payment_Gateway {
         // Mark as processing or on-hold (payment won't be taken until delivery).
         $order->payment_complete();
 
-        $order->update_status( 'completed', __( 'Payment collected via cash', 'wepos' ) );
+        $order->update_status( 'completed', __( 'Payment collected via card', 'wepos' ) );
         $order->add_order_note(
             sprintf(
-                /* translators: 1: Cash tendered amount 2: Cash change amount. */
-                __( 'Cash tendered amount: %1$s, Change amount: %2$s', 'wepos' ),
-                $order->get_meta( '_wepos_cash_tendered_amount', true ),
-                $order->get_meta( '_wepos_cash_change_amount', true )
+            /* translators: 1: Cash tendered amount 2: Cash change amount. */
+                __( 'Card tendered amount: %1$s, Change amount: %2$s', 'wepos' ),
+                $order->get_meta( '_wepos_card_tendered_amount', true ),
+                $order->get_meta( '_wepos_card_change_amount', true )
             )
         );
 
@@ -114,5 +112,4 @@ class Cash extends \WC_Payment_Gateway {
             'result'   => 'success',
         );
     }
-
- }
+}

@@ -770,7 +770,7 @@
                 </template>
               </div>
 
-              <template v-if="orderdata.payment_method=='wepos_cash'">
+              <template v-if="orderdata.payment_method=='wepos_cash' || orderdata.payment_method=='wepos_card'">
                 {{ /** Partial Payment **/ }}
                 <div class="payment-option">
                   <div v-if="settings.wepos_general.enable_partial_payment === 'yes'" class="payment-type-wrapper">
@@ -789,7 +789,7 @@
                   <div class="payment-amount">
                     <div class="input-part">
                       <div class="input-wrap">
-                        <p>{{ __('Cash', 'wepos') }}</p>
+                        <p>{{ __('Amount', 'wepos') }}</p>
                         <div class="input-addon">
                           <span class="currency">{{ wepos.currency_format_symbol }}</span>
                           <input id="input-cash-amount" type="text" v-model="cashAmount" ref="cashamount">

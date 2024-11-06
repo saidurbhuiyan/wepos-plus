@@ -3,7 +3,7 @@
 Plugin Name: wePOSPlus - Point Of Sale (POS) for WooCommerce
 Plugin URI:
 Description: A beautiful and fast Point of Sale (POS) system for WooCommerce
-Version: 1.3.6
+Version: 1.3.8
 Author: weDevs + saidur
 Author URI:
 Text Domain: weposPlus
@@ -77,7 +77,7 @@ final class WePOS {
      *
      * @var string
      */
-    public $version = '1.3.6';
+    public $version = '1.3.8';
 
     /**
      * Holds various class instances

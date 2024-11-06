@@ -19,6 +19,7 @@ class Updates {
         '1.3.0' => 'upgrade-1.3.0.php',
         '1.3.2' => 'upgrade-1.3.2.php',
         '1.3.6' => 'upgrade-1.3.6.php',
+        '1.3.8' => 'upgrade-1.3.8.php',
     ];
 
     /**

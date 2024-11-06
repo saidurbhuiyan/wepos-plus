@@ -10,6 +10,7 @@ jQuery(document).ready(function($) {
 
         // Get partial payment amount and order ID from form fields
         const partialPaymentAmount = $('#partial_payment_amount').val();
+        const partialPaymentMethod = $('#partial_payment_method').val();
         const orderId = $('#partial_payment_id').val();
         partialPaymentButton.prop('disabled', true).text('Please wait...');
 
@@ -25,7 +26,8 @@ jQuery(document).ready(function($) {
             },
             data: {
                 'order_id': orderId,
-                'partial_amount': partialPaymentAmount
+                'partial_amount': partialPaymentAmount,
+                'partial_method': partialPaymentMethod
             },
             success: function(response) {
                 // Check response for success
