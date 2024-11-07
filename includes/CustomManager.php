@@ -47,7 +47,7 @@ class CustomManager {
         add_action( 'woocommerce_product_options_pricing', [$this,'add_custom_product_price_fields'] );
         add_action( 'woocommerce_process_product_meta', [$this, 'save_custom_product_price_fields']);
         add_filter('woocommerce_rest_prepare_product_object', [$this,'add_local_and_export_prices_to_api_response'], 10, 3);
-        add_action('woocommerce_rest_pre_insert_shop_order_object', [$this, 'adjust_price_based_on_vendor_type']);
+        add_action('woocommerce_rest_pre_insert_shop_order_object', [$this, 'adjust_price_based_on_vendor_type'], 10, 3);
         add_filter('gettext', [$this,'custom_order_details_title'], 20);
         add_filter('ngettext', [$this,'custom_order_details_title'], 20);
 	}
@@ -427,42 +427,45 @@ class CustomManager {
     /**
      * Adjust prices based on vendor type
      * @param $order
+     * @param $request
+     * @param $creating
      * @return mixed
      */
-    public function adjust_price_based_on_vendor_type($order) {
+    public function adjust_price_based_on_vendor_type($order, $request, $creating) {
 
-            foreach ($order->get_items() as $item) {
-                $product_id = $item->get_product_id();
-                $product = wc_get_product($product_id);
-                $vendor = $order->get_meta('_wepos_vendor_type', true);
+        if (!$creating) {
+            return $order;
+        }
 
-                if ($product) {
-                    // Adjust prices based on vendor
-                    switch ($vendor) {
-                        case 'local':
-                            $local_price = get_post_meta($product_id, '_local_price', true);
-                            if ($local_price) {
-                                $item->set_subtotal($local_price);
-                                $item->set_total($local_price);
-                            }
-                            break;
+        $request_items = $request['line_items'] ?? [];
 
-                        case 'export':
-                            $export_price = get_post_meta($product_id, '_export_price', true);
-                            if ($export_price) {
-                                $item->set_subtotal($export_price);
-                                $item->set_total($export_price);
-                            }
-                            break;
+        foreach ($order->get_items() as $item) {
+            $product_id = $item->get_product_id();
+            $product = wc_get_product($product_id);
+            $vendor = $order->get_meta('_wepos_vendor_type', true);
+            $quantity = $item->get_quantity();
 
-                        case 'regular':
-                        default:
-                            break;
-                    }
+            // Find matching request item
+            $request_item = array_filter($request_items, fn($ri) => isset($ri['product_id']) && (int)$ri['product_id'] === (int)$product_id);
+            $request_item = $request_item ? array_shift($request_item) : null;
+
+            if ($product && $request_item) {
+                // Determine the appropriate meta key and request price based on vendor type
+                $price_meta_key = $vendor === 'local' ? '_local_price' : ($vendor === 'export' ? '_export_price' : '_regular_price');
+                $request_price_key = "{$vendor}_price";
+                $base_price = get_post_meta($product_id, $price_meta_key, true);
+                $request_price = $request_item[$request_price_key] ?? 0;
+
+                $final_price = max((float)$base_price, (float)$request_price) * $quantity;
+                if ($final_price) {
+                    $item->set_subtotal($final_price);
+                    $item->set_total($final_price);
                 }
             }
+        }
 
         return $order;
     }
+
 
 }

@@ -142,10 +142,15 @@ export default {
             cartObject.sale_price         = product.sales_display_price;
             cartObject.local_price        = product.local_display_price || product.regular_display_price;
             cartObject.export_price       = product.export_display_price || product.regular_display_price;
+            cartObject.actual_regular_price  = cartObject.regular_price;
+            cartObject.actual_local_price    = cartObject.local_price;
+            cartObject.actual_export_price   = cartObject.export_price;
+
             cartObject.on_sale            = product.on_sale;
             cartObject.attribute          = product.attributes;
             cartObject.variation_id       = ( product.parent_id !== 0 ) ? product.id : 0;
             cartObject.editQuantity       = false;
+            cartObject.editPrice         = false;
             cartObject.type               = product.type;
             cartObject.tax_amount         = product.tax_amount;
             cartObject.manage_stock       = product.manage_stock;
@@ -236,6 +241,10 @@ export default {
 
         toggleEditQuantity( state, itemKey ) {
             state.cartdata.line_items[itemKey].editQuantity = !  state.cartdata.line_items[itemKey].editQuantity;
+        },
+
+        allowEditPrice( state, itemKey ) {
+            state.cartdata.line_items[itemKey].editPrice = !  state.cartdata.line_items[itemKey].editPrice;
         },
 
         addDiscount( state, discountData ) {
@@ -376,6 +385,10 @@ export default {
 
         toggleEditQuantityAction( context, itemKey ) {
             context.commit( 'toggleEditQuantity', itemKey );
+        },
+
+        allowEditPriceAction( context, itemKey ) {
+            context.commit( 'allowEditPrice', itemKey );
         },
 
         addDiscountAction( context, discountData ) {

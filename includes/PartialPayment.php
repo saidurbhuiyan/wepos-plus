@@ -186,7 +186,7 @@ class PartialPayment
 					<?php endforeach; ?>
 				<?php else: ?>
                     <tr>
-                        <td colspan="6" style="text-align: center;"><?php esc_html_e('No partial payment records found.', 'wepos'); ?></td>
+                        <td colspan="7" style="text-align: center;"><?php esc_html_e('No partial payment records found.', 'wepos'); ?></td>
                     </tr>
 				<?php endif; ?>
                 </tbody>

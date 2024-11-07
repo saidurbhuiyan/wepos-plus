@@ -251,7 +251,8 @@
                                             </span>
                     </div>
                   </td>
-                  <td class="price" @click="toggleEditQuantity( item, key )">
+                  <td class="price">
+                    <template v-if="!item.editPrice">
                     <template v-if="item.on_sale">
                       <span class="sale-price">{{ formatPrice(item.sale_price) }}</span>
                       <span class="regular-price">{{ formatPrice(item.regular_price) }}</span>
@@ -261,6 +262,17 @@
                       <span class="sale-price" v-else-if="item.vendor_type === 'export'">{{ formatPrice(item.export_price) }}</span>
                       <span class="sale-price" v-else>{{ formatPrice(item.regular_price) }}</span>
                     </template>
+                    </template>
+                    <span v-if="item.editPrice" class="input-addon">
+                      <span class="currency">€</span>
+                      <input type="number"
+                             :min="minimumPrice(item)"
+                             step="1"
+                             :value="item[selectPrice(item)]"
+                             @input="updatePrice($event.target.value, item)"
+                      @blur="() => item.editPrice = false">
+                    </span>
+                    <span v-if="!item.editPrice" class="flaticon-circle-edit" @click.prevent="allowEditPrice( item, key )"></span>
 
                   </td>
                   <td class="qty" @click="toggleEditQuantity( item, key )">{{ item.quantity }}</td>
@@ -930,6 +942,10 @@ export default {
   },
   computed: {
     cartdata() {
+      this.$store.state.Cart.cartdata.line_items = this.$store.state.Cart.cartdata.line_items.map((item) => {
+        item.editPrice = false;
+        return item;
+      });
       return this.$store.state.Cart.cartdata;
     },
     orderdata() {
@@ -1045,9 +1061,33 @@ export default {
       return !value || parseInt(value)<= parseInt(max) ? (!value ||parseInt(value ) >= parseInt(min)? value : min) : max;
     },
 
+    selectPrice(item) {
+
+      if(item.on_sale){
+        return 'sale_price';
+      }
+
+      if (item.vendor_type === 'local' || item.vendor_type === 'export') {
+        return `${item.vendor_type}_price`;
+      }
+
+      return 'regular_price';
+    },
+
+    updatePrice(value, item) {
+      const priceKey = this.selectPrice(item);
+      if (this.minimumPrice(item) >= value) return;
+      item[priceKey] = value;
+    },
+
+    minimumPrice(item) {
+      const priceKey = this.selectPrice(item);
+      return item['actual_'+priceKey];
+    },
+
     handleExpireQuantityOnClick(event, type = 'up') {
       const input = event.target.parentNode.querySelector('input[type=number]');
-      if(!input) return;
+      if (!input) return;
       type === 'up' ? input.stepUp() : input.stepDown()
       input.dispatchEvent(new Event('change'))
 
@@ -1059,7 +1099,7 @@ export default {
 
     setVendorTypeFromUrl(vendorType = 'regular') {
       const urlParams = this.$route.query;
-      if(urlParams.vendor_type && urlParams.vendor_type !== vendorType && urlParams.vendor_type !== this.selectedVendorType) {
+      if (urlParams.vendor_type && urlParams.vendor_type !== vendorType && urlParams.vendor_type !== this.selectedVendorType) {
         this.selectedVendorType = urlParams.vendor_type
         return
       }
@@ -1564,6 +1604,10 @@ export default {
 
     toggleEditQuantity(product, key) {
       this.$store.dispatch('Cart/toggleEditQuantityAction', key);
+    },
+
+    allowEditPrice(product, key) {
+      this.$store.dispatch('Cart/allowEditPriceAction',key)
     },
     removeItem(key, productId) {
       this.$store.dispatch('Cart/removeCartItemAction', key);
@@ -2908,14 +2952,57 @@ export default {
                 }
 
                 &.price {
+                  display: inline-flex;
+                  align-items: center;
+                  justify-content: center;
+                  height: inherit;
+                  flex-direction: row-reverse;
+
                   span {
-                    display: block;
+                    display: inline-flex;
 
                     &.regular-price {
                       font-size: 11px;
                       text-decoration: line-through;
                       color: #9095A5;
                       padding-left: 5px;
+                    }
+
+                    &.flaticon-circle-edit {
+                      margin-right: 4px;
+                      font-weight: normal;
+                      font-size: 10px;
+                      color: #9095A5;
+                      cursor: pointer;
+
+                      &:hover {
+                        color: #3B80F4;
+                      }
+                    }
+
+                    &.input-addon {
+                      span.currency {
+                        padding: 5px;
+                        font-size: 13px;
+                        text-align: center;
+                      }
+
+                      input {
+                        -webkit-appearance: none;
+                        outline: none;
+                        border: 1px solid #bdc0c9;
+                        padding: 5px;
+                        font-size: 13px;
+                        border-radius: 3px;
+                        width: 60px;
+                        margin-right: 5px;
+
+                        &::-webkit-inner-spin-button,
+                        &::-webkit-outer-spin-button {
+                          -webkit-appearance: none;
+                          margin: 0;
+                        }
+                      }
                     }
                   }
                 }
