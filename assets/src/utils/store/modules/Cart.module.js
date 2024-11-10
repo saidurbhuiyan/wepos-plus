@@ -157,8 +157,10 @@ export default {
             cartObject.stock_status       = product.stock_status;
             cartObject.backorders_allowed = product.backorders_allowed;
             cartObject.stock_quantity     = product.stock_quantity;
-            cartObject.stock_expiry       = product.stock_expiry
-            cartObject.expiry             = null
+            cartObject.stock_expiry       = product.stock_expiry;
+            cartObject.expiry             = null;
+            cartObject.selected_expiry_date = null;
+            cartObject.selected_discount_type = 'fixed_product';
             cartObject.vendor_type        = product.vendor_type?? 'regular';
 
             var index = weLo_.findIndex( state.cartdata.line_items, { product_id: cartObject.product_id, variation_id: cartObject.variation_id} );
@@ -213,6 +215,7 @@ export default {
 
             let itemQuantity = parseInt(item.quantity);
             let expireExistQuantity = expiryExists ? parseInt(expiryExists.quantity) : 0;
+            item.selected_expiry_date = null;
 
             if (expiryExists && quantity <= 0){
                 item.quantity = itemQuantity > expireExistQuantity ? itemQuantity - expireExistQuantity : 0;

@@ -68,7 +68,7 @@ export default {
     data() {
         return {
             showVariationModal: false,
-            mode: 'scan',
+            mode: 'product',
             serachInput: '',
             selectedVariationProduct: {},
             attributeDisabled: true,

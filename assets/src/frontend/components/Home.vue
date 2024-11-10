@@ -300,15 +300,15 @@
                   <td colspan="6">
                     <div v-if="getExpiryData(item)" style="width: 100%;">
                       <span class="qty">{{ __('Expiry', 'wepos') }}</span>
-                      <select id="search_by" name="expiry" v-model="selectedExpiryKey">
+                      <select id="search_by" name="expiry" v-model="item.selected_expiry_date">
                         <option value disabled>Select Expiry</option>
                         <option :value="null" selected>No Expiry</option>
                         <template v-for="expiry in getExpiryData(item)">
                           <option :value="expiry.date">{{ expiry.date }}</option>
                         </template>
                       </select>
-                      <span v-if="selectedExpiryKey" class="add-expiry flaticon-add"
-                            @click.prevent="() => updateExpiryQuantity(key, selectedExpiryKey, 1)"></span>
+                      <span v-if="item.selected_expiry_date" class="add-expiry flaticon-add"
+                            @click.prevent="() => updateExpiryQuantity(key, item.selected_expiry_date, 1)"></span>
                     </div>
                     <template v-if="item.expiry && item.expiry.length > 0">
                       <!-- Header -->
@@ -325,7 +325,11 @@
                           :key="expireKey"
                           style="display: flex; width: 100%; margin: 4px; text-align: center; align-items: center;"
                       >
-                        <span class="qty" style="flex: 1;">{{ expiry.date }}</span>
+                        <span class="qty" style="flex: 1;">{{ expiry.date }}
+                          <span style="color:#eaa600">
+                         ({{ (getExpiryInfo(item, expiry.date).quantity - expiry.quantity) || 0 }})
+                        </span>
+                        </span>
                         <span class="number-input qty-number">
                           <button @click.prevent="(e)=> handleExpireQuantityOnClick(e, 'down')" ></button>
       <input
@@ -362,7 +366,7 @@
                   <tr v-if="item.editQuantity && !hasProductDiscount(item.product_id)" class="update-quantity-wrap">
                     <td colspan="2">
                       <span class="qty">{{ __('Fixed Discount Type', 'wepos') }}</span>
-                      <select id="search_by" name="discount_type" v-model="selectedDiscountType">
+                      <select id="search_by" name="discount_type" v-model="item.selected_discount_type">
                         <option value disabled>Select Type</option>
                         <option value="fixed_product" selected>Per Quantity</option>
                         <option value="fixed_product_item">On Product</option>
@@ -372,7 +376,7 @@
                       <span class="qty">{{ __('Discount', 'wepos') }}</span>
                       <span class="input-addon">
                         <span class="currency">{{ wepos.currency_format_symbol }}</span>
-                        <input type="number" min="1" step="1" @change="(e) => e.target.value > 0 && setDiscount(e.target.value,selectedDiscountType, item.product_id)">
+                        <input type="number" min="1" step="1" @change="(e) => e.target.value > 0 && setDiscount(e.target.value,item.selected_discount_type, item.product_id)">
                       </span>
                   </td>
                 </tr>
@@ -932,8 +936,6 @@ export default {
       couponData: {},
       /* partial payment */
       paymentType: 'full',
-      selectedExpiryKey: null,
-      selectedDiscountType: 'fixed_product',
       AvailableExpiryData: null,
       selectedVendorType: 'regular',
       searchedProducts : false,
@@ -1590,12 +1592,17 @@ export default {
         return;
       }
 
+      const keyExist = this.cartdata.line_items.findIndex(item => item.product_id === product.id);
+
       product.stock_expiry = product.meta_data.some((meta) => meta.key === '_expiry_rule' && meta.value === 'yes') ? product.meta_data.find((meta) => meta.key === '_expiry_data')?.value : null;
-      this.$store.dispatch('Cart/addToCartAction', product);
+
+      if(!this.hasExpiryQuantity(product) || (this.hasExpiryQuantity(product) && keyExist === -1)) {
+        this.$store.dispatch('Cart/addToCartAction', product);
+      }
 
       const itemKey = this.cartdata.line_items.findIndex(item => item.product_id === product.id);
 
-      if(this.hasExpiryQuantity(product) && itemKey !== -1) {
+      if(this.hasExpiryQuantity(product) && itemKey !== -1 && keyExist === -1) {
         const sortedDates = product.stock_expiry.sort((a, b) => new Date(a.date) - new Date(b.date));
         this.updateExpiryQuantity(itemKey,sortedDates[0].date, 1);
       }
@@ -1649,7 +1656,6 @@ export default {
 
     updateExpiryQuantity(key, expiryDate, quantity) {
       this.$store.dispatch('Cart/updateCartExpiryItemQuantityAction', {key, expiryDate, quantity});
-      this.selectedExpiryKey = null;
     },
     fetchGateway() {
       wepos.api.get(wepos.rest.root + wepos.rest.posversion + '/payment/gateways')
