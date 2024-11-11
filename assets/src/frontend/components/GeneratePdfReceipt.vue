@@ -301,7 +301,7 @@ export default {
       //cash given
       yPosition += 5;
       doc.setFont("Helvetica", "normal");
-      doc.text(printdata.gateway.id='wepos_cash' ?'Cash Given:' : 'Paid Amount:', 10, yPosition);
+      doc.text(printdata.gateway.id==='wepos_cash' ?'Cash Given:' : 'Paid Amount:', 10, yPosition);
       doc.text(this.formatPrice(parseFloat(printdata.cashamount).toFixed(2)), 198, yPosition, {align: 'right'});
 
       if (printdata.paymenttype === 'partial' && printdata.dueamount > 0) {

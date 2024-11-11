@@ -398,8 +398,8 @@ class CustomManager {
      */
     public function add_local_and_export_prices_to_api_response($response, $product, $request) {
         // Get the custom fields
-        $local_price = get_post_meta($product->get_id(), '_local_price', true);
-        $export_price = get_post_meta($product->get_id(), '_export_price', true);
+        $local_price = $product->get_meta('_local_price', true);
+        $export_price = $product->get_meta( '_export_price', true);
 
         // Add custom fields to the response data
         $response->data['vendor_type'] = $request['vendor_type'] ?? 'regular';

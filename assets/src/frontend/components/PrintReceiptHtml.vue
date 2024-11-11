@@ -100,7 +100,7 @@
                     </tr>
                     <tr v-if="hasFixedProductDiscount()" class="cart-meta-data">
                       <td colspan="3" class="name">{{ __( 'Discount', 'wepos' ) }}</td>
-                      <td class="price">-{{ formatPrice( Math.abs(  totalFixedProductDiscount()  ) ) }}</td>
+                      <td class="price">-{{ formatPrice(   totalFixedProductDiscount() ) }}</td>
                     </tr>
                     <tr v-else v-for="(fee,key) in printdata.coupon_lines" class="cart-meta-data">
                         <td colspan="3" class="name">{{ __( 'Discount', 'wepos' ) }} <span class="metadata">{{ fee.discount_type == 'percent' ? fee.value + '%' : formatPrice( fee.value ) }}</span></td>
@@ -134,9 +134,9 @@
                       <td colspan="3">{{ __( 'Payment Type', 'wepos' ) }}</td>
                       <td class="price">{{ printdata.paymenttype === 'partial' ? 'Partial Payment' : 'Full Payment' }}</td>
                     </tr>
-                    <template v-if="printdata.gateway.id === 'wepos_cash' || printdata.gateway.id ==='wepos_card'">
+                    <template v-if="printdata.gateway.id === 'wepos_cash' || printdata.gateway.id === 'wepos_card'">
                         <tr>
-                            <td colspan="3">{{ __( printdata.gateway.id='wepos_cash' ? 'Cash Given' : 'Paid Amount', 'wepos' ) }}</td>
+                            <td colspan="3">{{ __( printdata.gateway.id ==='wepos_cash' ? 'Cash Given' : 'Paid Amount', 'wepos' ) }}</td>
                             <td class="price">{{ formatPrice( printdata.cashamount ) }}</td>
                         </tr>
                         {{ /* partial payment */}}
@@ -210,12 +210,13 @@ export default {
       },
 
       totalFixedProductDiscount() {
+
         const discount = this.printdata.coupon_lines
             .filter(coupon => coupon.discount_type === 'fixed_product')
             .map(coupon => parseFloat(coupon.total))
-            .reduce((sum, value) => sum + value, 0).toFixed(2);
+            .reduce((sum, value) => sum + value, 0);
 
-        return discount && discount.length > 0 ? discount  : '0.00';
+        return (Math.abs(discount && discount.length > 0 ? discount  : 0)).toFixed(2);
       },
 
       hasProductDiscount(productId) {
