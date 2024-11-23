@@ -81,6 +81,7 @@ class Manager {
         return apply_filters( 'wepos_register_gateway', [
             'WeDevs\WePOS\Gateways\Cash' => WEPOS_INCLUDES . '/Gateways/Cash.php',
             'WeDevs\WePOS\Gateways\Card' => WEPOS_INCLUDES . '/Gateways/Card.php',
+            'WeDevs\WePOS\Gateways\CashCard' => WEPOS_INCLUDES . '/Gateways/CashCard.php',
         ] );
     }
 

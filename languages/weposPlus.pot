@@ -2,9 +2,9 @@
 # This file is distributed under the GPL2.
 msgid ""
 msgstr ""
-"Project-Id-Version: wePOSPlus - Point Of Sale (POS) for WooCommerce 1.3.8\n"
+"Project-Id-Version: wePOSPlus - Point Of Sale (POS) for WooCommerce 1.3.9\n"
 "Report-Msgid-Bugs-To: https://wordpress.org/support/plugin/wepos-plus\n"
-"POT-Creation-Date: 2024-11-11 15:00:17+00:00\n"
+"POT-Creation-Date: 2024-11-22 19:49:12+00:00\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
@@ -268,7 +268,7 @@ msgstr ""
 #: assets/src/frontend/components/Home.vue:712
 #: assets/src/frontend/components/Home.vue:717
 #: assets/src/frontend/components/Home.vue:734
-#: assets/src/frontend/components/Home.vue:1447
+#: assets/src/frontend/components/Home.vue:1493
 #: assets/src/frontend/components/PrintReceiptHtml.vue:102
 #: assets/src/frontend/components/PrintReceiptHtml.vue:106
 #: languages/wepos.php:51
@@ -319,7 +319,7 @@ msgstr ""
 #: assets/src/frontend/components/Home.vue:521
 #: assets/src/frontend/components/Home.vue:723
 #: assets/src/frontend/components/Home.vue:740
-#: assets/src/frontend/components/Home.vue:1469
+#: assets/src/frontend/components/Home.vue:1515
 #: assets/src/frontend/components/PrintReceiptHtml.vue:110
 #: languages/wepos.php:57
 msgid "Fee"
@@ -399,7 +399,7 @@ msgid "Go to payment receipt"
 msgstr ""
 
 #: assets/src/frontend/components/Home.vue:615
-#: assets/src/frontend/components/Home.vue:838 languages/wepos.php:75
+#: assets/src/frontend/components/Home.vue:857 languages/wepos.php:75
 msgid "Process Payment"
 msgstr ""
 
@@ -439,37 +439,46 @@ msgstr ""
 msgid "No gateway found"
 msgstr ""
 
-#: assets/src/frontend/components/Home.vue:808
+#: assets/src/frontend/components/Home.vue:810 includes/Gateways/Cash.php:55
+#: languages/wepos.php:84
+msgid "Cash"
+msgstr ""
+
+#: assets/src/frontend/components/Home.vue:817 includes/Gateways/Card.php:53
+msgid "Card"
+msgstr ""
+
+#: assets/src/frontend/components/Home.vue:825
 msgid "Amount"
 msgstr ""
 
-#: assets/src/frontend/components/Home.vue:816 languages/wepos.php:85
+#: assets/src/frontend/components/Home.vue:835 languages/wepos.php:85
 msgid "Due money"
 msgstr ""
 
-#: assets/src/frontend/components/Home.vue:819 languages/wepos.php:86
+#: assets/src/frontend/components/Home.vue:838 languages/wepos.php:86
 msgid "Change money"
 msgstr ""
 
-#: assets/src/frontend/components/Home.vue:835 languages/wepos.php:87
+#: assets/src/frontend/components/Home.vue:854 languages/wepos.php:87
 msgid "Back to Sale"
 msgstr ""
 
-#: assets/src/frontend/components/Home.vue:1037
-#: assets/src/frontend/components/Home.vue:1701
-#: assets/src/frontend/components/Home.vue:1729 languages/wepos.php:88
+#: assets/src/frontend/components/Home.vue:1060
+#: assets/src/frontend/components/Home.vue:1747
+#: assets/src/frontend/components/Home.vue:1775 languages/wepos.php:88
 msgid "All categories"
 msgstr ""
 
-#: assets/src/frontend/components/Home.vue:1309
+#: assets/src/frontend/components/Home.vue:1355
 msgid "Please remove empty items from the cart and try again."
 msgstr ""
 
-#: assets/src/frontend/components/Home.vue:1567 languages/wepos.php:89
+#: assets/src/frontend/components/Home.vue:1613 languages/wepos.php:89
 msgid "This product is out of stock."
 msgstr ""
 
-#: assets/src/frontend/components/Home.vue:1589 languages/wepos.php:90
+#: assets/src/frontend/components/Home.vue:1635 languages/wepos.php:90
 msgid "Product is out of stock!"
 msgstr ""
 
@@ -480,7 +489,7 @@ msgstr ""
 
 #: assets/src/frontend/components/PrintReceiptHtml.vue:29
 #: assets/src/frontend/components/PrintReceiptHtml.vue:125
-#: includes/PartialPayment.php:287
+#: includes/PartialPayment.php:289
 msgid "Vendor Type"
 msgstr ""
 
@@ -511,28 +520,6 @@ msgstr ""
 #: assets/src/frontend/components/PrintReceiptHtml.vue:134
 #: languages/wepos.php:96
 msgid "Payment Type"
-msgstr ""
-
-#: assets/src/frontend/components/PrintReceiptHtml.vue:144
-#: includes/PartialPayment.php:282 languages/wepos.php:98
-msgid "Due Amount"
-msgstr ""
-
-#: assets/src/frontend/components/PrintReceiptHtml.vue:148
-#: languages/wepos.php:99
-msgid "Change Money"
-msgstr ""
-
-#: assets/src/frontend/components/PrintReceiptHtml.vue:159
-msgid "Prepared by"
-msgstr ""
-
-#: assets/src/frontend/components/PrintReceiptHtml.vue:162
-msgid "Delivered by"
-msgstr ""
-
-#: assets/src/frontend/components/PrintReceiptHtml.vue:165
-msgid "Reviewed by"
 msgstr ""
 
 #: assets/src/frontend/components/ProductSearch.vue:81 languages/wepos.php:101
@@ -616,19 +603,19 @@ msgstr ""
 msgid "Setting has been saved successfully."
 msgstr ""
 
-#: includes/Admin/Updates.php:78
+#: includes/Admin/Updates.php:79
 msgid "WePOS Data Update Required"
 msgstr ""
 
-#: includes/Admin/Updates.php:78
+#: includes/Admin/Updates.php:79
 msgid "We need to update your install to the latest version"
 msgstr ""
 
-#: includes/Admin/Updates.php:79
+#: includes/Admin/Updates.php:80
 msgid "Run the updater"
 msgstr ""
 
-#: includes/Admin/Updates.php:84
+#: includes/Admin/Updates.php:85
 msgid ""
 "It is strongly recommended that you backup your database before proceeding. "
 "Are you sure you wish to run the updater now?"
@@ -731,6 +718,7 @@ msgid "Have your customers pay with card"
 msgstr ""
 
 #: includes/Gateways/Card.php:43 includes/Gateways/Cash.php:45
+#: includes/Gateways/CashCard.php:45
 msgid "Enable/Disable"
 msgstr ""
 
@@ -739,22 +727,22 @@ msgid "Enable Card gateway"
 msgstr ""
 
 #: includes/Gateways/Card.php:50 includes/Gateways/Cash.php:52
+#: includes/Gateways/CashCard.php:52
 msgid "Title"
 msgstr ""
 
 #: includes/Gateways/Card.php:52 includes/Gateways/Cash.php:54
+#: includes/Gateways/CashCard.php:54
 msgid "Payment method description that the marchent see in pos checkout"
 msgstr ""
 
-#: includes/Gateways/Card.php:53
-msgid "Card"
-msgstr ""
-
 #: includes/Gateways/Card.php:57 includes/Gateways/Cash.php:59
+#: includes/Gateways/CashCard.php:59
 msgid "Description"
 msgstr ""
 
 #: includes/Gateways/Card.php:59 includes/Gateways/Cash.php:61
+#: includes/Gateways/CashCard.php:61
 msgid "Payment method description that marchent see in pos checkout page"
 msgstr ""
 
@@ -783,10 +771,6 @@ msgstr ""
 msgid "Enable cash gateway"
 msgstr ""
 
-#: includes/Gateways/Cash.php:55 languages/wepos.php:84
-msgid "Cash"
-msgstr ""
-
 #: includes/Gateways/Cash.php:62
 msgid "Pay with cash"
 msgstr ""
@@ -795,9 +779,33 @@ msgstr ""
 msgid "Payment collected via cash"
 msgstr ""
 
-#: includes/Gateways/Cash.php:104
+#: includes/Gateways/Cash.php:104 includes/Gateways/CashCard.php:104
 #. translators: 1: Cash tendered amount 2: Cash change amount.
 msgid "Cash tendered amount: %1$s, Change amount: %2$s"
+msgstr ""
+
+#: includes/Gateways/CashCard.php:33
+msgid "Wepos Cash & Card"
+msgstr ""
+
+#: includes/Gateways/CashCard.php:34
+msgid "Have your customers pay with cash & card"
+msgstr ""
+
+#: includes/Gateways/CashCard.php:46
+msgid "Enable cash & card gateway"
+msgstr ""
+
+#: includes/Gateways/CashCard.php:55
+msgid "Cash & Card"
+msgstr ""
+
+#: includes/Gateways/CashCard.php:62
+msgid "Pay with cash & card"
+msgstr ""
+
+#: includes/Gateways/CashCard.php:100
+msgid "Payment collected via cash & card"
 msgstr ""
 
 #: includes/LowStockManager.php:60
@@ -812,53 +820,57 @@ msgstr ""
 msgid "No low stock products found."
 msgstr ""
 
-#: includes/PartialPayment.php:136 includes/functions.php:198
+#: includes/PartialPayment.php:137 includes/functions.php:198
 msgid "ID"
 msgstr ""
 
-#: includes/PartialPayment.php:137
+#: includes/PartialPayment.php:138
 msgid "Method"
 msgstr ""
 
-#: includes/PartialPayment.php:138
+#: includes/PartialPayment.php:139
 msgid "Paid Amount"
 msgstr ""
 
-#: includes/PartialPayment.php:139
+#: includes/PartialPayment.php:140
 msgid "Total Refund"
 msgstr ""
 
-#: includes/PartialPayment.php:140
+#: includes/PartialPayment.php:141
 msgid "Total Due"
 msgstr ""
 
-#: includes/PartialPayment.php:141
+#: includes/PartialPayment.php:142
 msgid "Created Date"
 msgstr ""
 
-#: includes/PartialPayment.php:142
+#: includes/PartialPayment.php:143
 msgid "Actions"
 msgstr ""
 
-#: includes/PartialPayment.php:189
+#: includes/PartialPayment.php:191
 msgid "No partial payment records found."
 msgstr ""
 
-#: includes/PartialPayment.php:255
+#: includes/PartialPayment.php:257
 msgid "Processing"
 msgstr ""
 
-#: includes/PartialPayment.php:261
+#: includes/PartialPayment.php:263
 msgid "Complete"
 msgstr ""
 
-#: includes/PartialPayment.php:344
+#: includes/PartialPayment.php:284 languages/wepos.php:98
+msgid "Due Amount"
+msgstr ""
+
+#: includes/PartialPayment.php:346
 msgid "Partially Paid <span class=\"count\">(%s)</span>"
 msgid_plural "Partially Paid <span class=\"count\">(%s)</span>"
 msgstr[0] ""
 msgstr[1] ""
 
-#: includes/PartialPayment.php:412
+#: includes/PartialPayment.php:414
 msgid "%s order status changed to Partial Payment."
 msgid_plural "%s order statuses changed to Partial Payment."
 msgstr[0] ""
@@ -900,7 +912,7 @@ msgstr ""
 msgid "Partial payment method."
 msgstr ""
 
-#: includes/REST/PartialPaymentController.php:112
+#: includes/REST/PartialPaymentController.php:117
 msgid "Partial Payment collected via cash/card"
 msgstr ""
 
@@ -916,7 +928,7 @@ msgstr ""
 msgid "No payment gateway found for processing this payment"
 msgstr ""
 
-#: includes/REST/PaymentController.php:127
+#: includes/REST/PaymentController.php:131
 msgid "Partial Payment collected via cash"
 msgstr ""
 
@@ -1006,6 +1018,10 @@ msgstr ""
 msgid "Cash Given"
 msgstr ""
 
+#: languages/wepos.php:99
+msgid "Change Money"
+msgstr ""
+
 #: languages/wepos.php:100
 msgid "No product found"
 msgstr ""
@@ -1044,7 +1060,7 @@ msgstr ""
 msgid "weDevs + saidur"
 msgstr ""
 
-#: includes/PartialPayment.php:339 includes/PartialPayment.php:359
+#: includes/PartialPayment.php:341 includes/PartialPayment.php:361
 msgctxt "Order status"
 msgid "Partially Paid"
 msgstr ""

@@ -31,7 +31,7 @@ async function uploadPDF(pdfBlob, filename) {
 async function deletePDF(pdfId) {
 	try {
 		const response                                = await fetch(
-			weposData.mediaUrl + ` / ${pdfId} ? force = true`,
+			weposData.mediaUrl + `/${pdfId}?force=true`,
 			{
 				method: 'DELETE',
 				headers: {
@@ -292,9 +292,11 @@ async function generateReceiptPDF(printdata, settings, partialPaymentId,actionTy
 	if(parseFloat( printdata.current_payment.paid ) > 0) {
 	// total Paid/Due Amount
 		// Paid Amount
+		const metadata = JSON.parse(printdata.current_payment.metadata)
+		const paidTitle = printdata.current_payment.method === 'Cash & Card' ? 'Paid Amount (Cash: '+formatPrice(metadata.cash ?? 0)+' + Card: '+formatPrice(metadata.card ?? 0)+')' : 'Paid Amount:';
 		yPosition += 5;
 		doc.setFont( "Helvetica", "bold" );
-		doc.text( 'Paid Amount:', 10, yPosition );
+		doc.text( paidTitle, 10, yPosition );
 		doc.text( formatPrice( parseFloat( printdata.current_payment.paid ).toFixed( 2 ) ), 198, yPosition, {align: 'right'} );
     }
 
@@ -316,8 +318,10 @@ async function generateReceiptPDF(printdata, settings, partialPaymentId,actionTy
 		printdata.past_payment.forEach(
 			payment => {
 				yPosition += 5;
+				const metadata = JSON.parse(payment.metadata)
+				const paidTitle = payment.method === 'Cash & Card' && metadata !== null ? ' (Cash:'+(metadata.cash ?? 0)+' + Card:'+(metadata.card ?? 0)+') ' : '';
 				doc.text( formatDate( payment.date_created ) + ' ('+ capitalizeFirstLetter(payment.method ?? 'cash')+')', 13, yPosition );
-				doc.text( formatPrice( parseFloat( payment.paid ).toFixed( 2 ) ), 198, yPosition, {align: 'right'} );
+				doc.text( paidTitle + formatPrice( parseFloat( payment.paid ).toFixed( 2 ) ), 198, yPosition, {align: 'right'} );
 			}
 		);
 
@@ -364,7 +368,7 @@ async function generateReceiptPDF(printdata, settings, partialPaymentId,actionTy
 		doc.text( 'Total Paid:', 10, yPosition );
 		doc.text( formatPrice( total_partial_paid ), 198, yPosition, {align: 'right'} );
 
-	if (printdata.payment_method === 'wepos_cash' && printdata.meta_data.some( (data) => data.key === '_wepos_cash_payment_type' && data.value === 'partial' ) && printdata.total_partial_due > 0) {
+	if ((printdata.payment_method === 'wepos_cash' || printdata.payment_method === 'wepos_card' || printdata.payment_method === 'wepos_cash_card') && printdata.meta_data.some( (data) => data.key === '_wepos_cash_payment_type' && data.value === 'partial' ) && printdata.total_partial_due > 0) {
 		// total Due
 		yPosition += 5;
 		doc.text( 'Total Due:', 10, yPosition );
@@ -535,7 +539,7 @@ jQuery( document ).ready(
 							type: 'POST',
 							url: `${weposData.orderUrl}/${partialPaymentData.orderId}`,
 							beforeSend: function (xhr) {
-								xhr.setRequestHeader( 'X-WP-Nonce', weposData.nonce ); // Set nonce header for security
+								xhr.setRequestHeader( 'X-WP-Nonce', weposData.nonce );
 							}
 						}
 					);

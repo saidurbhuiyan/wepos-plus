@@ -106,11 +106,12 @@ class PartialPayment
 		);
 	}
 
-	/**
-	 * Add order partial payment stats
-	 * @param $order
-	 * @return void
-	 */
+    /**
+     * Add order partial payment stats
+     * @param $order
+     * @return void
+     * @throws \JsonException
+     */
 	public function order_partial_payment_stats($order)
 	{
 		$order = wc_get_order($order);
@@ -146,11 +147,12 @@ class PartialPayment
 				<?php if (!empty($partial_payment_stats)): ?>
 					<?php foreach ($partial_payment_stats as $stat):
 						$due = $total_amount - $total_paid - $total_refund;
+                        $cashCardAmount = $stat->metadata ? json_decode($stat->metadata, false, 512, JSON_THROW_ON_ERROR) : null;
 						?>
                         <tr>
                             <td class="partial-column-id"><?php echo esc_html($stat->ID); ?></td>
                             <td class="partial-column-payment-method"><?php echo esc_html($stat->method); ?></td>
-                            <td class="partial-column-paid-amount"><?php echo wc_price($stat->paid); ?></td>
+                            <td class="partial-column-paid-amount"><?php echo wc_price($stat->paid). ($stat->method === 'Cash & Card' && $cashCardAmount !== null ? ' ( cash:' . ($cashCardAmount->cash ?? 0) . '+ card:' . ($cashCardAmount->card ?? 0) . ')' : '') ?></td>
                             <td class="partial-column-total-due"><?php echo wc_price($stat->refund??0); ?></td>
                             <td class="partial-column-total-due"><?php echo wc_price($due > 0 ? $due : 0); ?></td>
                             <td class="partial-column-created-date">
@@ -456,7 +458,18 @@ class PartialPayment
         }
         echo '</select>
             </p>
-          <p class="woocommerce-form-row woocommerce-form-row--wide form-row form-row-wide">
+            <div id="partial_cash_card_amount" style="display: none">
+            <p id="partial_cash_amount" class="woocommerce-form-row woocommerce-form-row--wide form-row form-row-wide">
+                <label for="partial_cash_payment_amount">Cash</label>
+                <input class="woocommerce-Input woocommerce-Input--number input-number" type="number" step="0.01" min="1" max="' . esc_attr($due) . '" id="partial_cash_payment_amount" />
+            </p>
+            <p id="partial_card_amount" class="woocommerce-form-row woocommerce-form-row--wide form-row form-row-wide">
+                <label for="partial_card_payment_amount">Card</label>
+                <input class="woocommerce-Input woocommerce-Input--number input-number" type="number" step="0.01" min="1" max="' . esc_attr($due) . '" id="partial_card_payment_amount" />
+            </p>
+            <p>Due Amount: ' . wc_price($due) . '</p>
+            </div>
+          <p id="partial_single_amount" class="woocommerce-form-row woocommerce-form-row--wide form-row form-row-wide">
                 <label for="partial_payment_amount">Amount</label>
                 <input class="woocommerce-Input woocommerce-Input--number input-number" type="number" step="0.01" min="1" max="' . esc_attr($due) . '" id="partial_payment_amount" name="partial_amount" value="' . esc_attr($due) . '" />
             </p>

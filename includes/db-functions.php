@@ -7,8 +7,9 @@
  * @param string $method
  * @param int $refund
  * @return int|WP_Error
+ * @throws JsonException
  */
-function insert_partial_payment_stat($order_id, $paid, $method = 'Cash', $refund = 0) {
+function insert_partial_payment_stat($order_id, $paid, $method = 'Cash', $refund = 0, $metadata = []) {
 	global $wpdb;
 
     if (!defined('PARTIAL_PAYMENT_TABLE')) {
@@ -24,13 +25,15 @@ function insert_partial_payment_stat($order_id, $paid, $method = 'Cash', $refund
 			'paid' => $paid,
 			'date_created' => current_time('mysql'),
             'refund' => $refund,
-            'method' => $method
+            'method' => $method,
+            'metadata' => json_encode($metadata, JSON_THROW_ON_ERROR)
 		),
 		array(
 			'%d',
 			'%f',
 			'%s',
             '%f',
+            '%s',
             '%s'
 		)
 	);

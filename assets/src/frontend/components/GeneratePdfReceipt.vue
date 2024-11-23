@@ -297,11 +297,15 @@ export default {
     doc.text(printdata.paymenttype  === 'partial' ? 'Partial Payment' : 'Full Payment', 198, yPosition, {align: 'right'});
 
     // total Paid/Due Amount
-    if (printdata.gateway.id === 'wepos_cash' || printdata.gateway.id === 'wepos_card') {
+    if (printdata.gateway.id === 'wepos_cash' || printdata.gateway.id === 'wepos_card' || printdata.gateway.id === 'wepos_cash_card') {
       //cash given
       yPosition += 5;
       doc.setFont("Helvetica", "normal");
-      doc.text(printdata.gateway.id==='wepos_cash' ?'Cash Given:' : 'Paid Amount:', 10, yPosition);
+      let paidTitle = printdata.gateway.id==='wepos_cash' ?'Cash Given:' : 'Paid Amount:';
+      if(printdata.gateway.id === 'wepos_cash_card'){
+        paidTitle = 'Paid Amount (Cash: '+this.formatPrice(printdata.cash_card_amount.cash)+' + Card: '+this.formatPrice(printdata.cash_card_amount.card)+')';
+      }
+      doc.text(paidTitle, 10, yPosition);
       doc.text(this.formatPrice(parseFloat(printdata.cashamount).toFixed(2)), 198, yPosition, {align: 'right'});
 
       if (printdata.paymenttype === 'partial' && printdata.dueamount > 0) {
@@ -387,7 +391,7 @@ export default {
         let setPhoneNumber = '';
 
         if (phoneNumber === '' || confirm("Do you want to use another phone number to send the receipt?")) {
-          setPhoneNumber = prompt("Please enter the phone number with country code (example +351) to send the receipt:");
+          setPhoneNumber = prompt("Please enter the phone number with country code (example +351 or 351) to send the receipt:");
         }
 
         if (setPhoneNumber) {
@@ -396,7 +400,7 @@ export default {
 
         if (phoneNumber !== '') {
           phoneNumber = phoneNumber.replaceAll('+', '');
-          await this.generateReceiptPDF(this.printdata, this.settings, phoneNumber);  // Make sure to await the PDF generation process
+          await this.generateReceiptPDF(this.printdata, this.settings, phoneNumber);
         }
 
         this.generating = false;

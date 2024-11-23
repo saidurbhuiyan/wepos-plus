@@ -1,6 +1,15 @@
 jQuery(document).ready(function($) {
 
     const partialPaymentButton = $('#update_partial_payment_button');
+    $('#partial_payment_method').on('change', function() {
+        if ($(this).val() === 'Cash & Card') {
+            $('#partial_single_amount').hide();
+            $('#partial_cash_card_amount').show();
+        }else{
+            $('#partial_single_amount').show();
+            $('#partial_cash_card_amount').hide();
+        }
+    })
     // Function to handle form submission
     function handlePartialPaymentFormSubmission() {
 
@@ -9,8 +18,19 @@ jQuery(document).ready(function($) {
         const nonce = restApiSettings.nonce;
 
         // Get partial payment amount and order ID from form fields
-        const partialPaymentAmount = $('#partial_payment_amount').val();
+        let partialPaymentAmount = $('#partial_payment_amount').val();
         const partialPaymentMethod = $('#partial_payment_method').val();
+        let cashCardAmount = {
+            cash : '',
+            card : '',
+        }
+        if(partialPaymentMethod === 'Cash & Card'){
+            partialPaymentAmount = parseFloat($('#partial_cash_payment_amount').val()) + parseFloat($('#partial_card_payment_amount').val());
+            cashCardAmount = {
+                cash : $('#partial_cash_payment_amount').val(),
+                card : $('#partial_card_payment_amount').val(),
+            }
+        }
         const orderId = $('#partial_payment_id').val();
         partialPaymentButton.prop('disabled', true).text('Please wait...');
 
@@ -25,9 +45,10 @@ jQuery(document).ready(function($) {
                 xhr.setRequestHeader('X-WP-Nonce', nonce); // Set nonce header for security
             },
             data: {
-                'order_id': orderId,
-                'partial_amount': partialPaymentAmount,
-                'partial_method': partialPaymentMethod
+                order_id: orderId,
+                partial_amount: partialPaymentAmount,
+                partial_method: partialPaymentMethod,
+                cash_card_amount: cashCardAmount
             },
             success: function(response) {
                 // Check response for success

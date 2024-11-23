@@ -115,6 +115,7 @@ class Installer {
         require_once(WEPOS_INCLUDES . '/Admin/Updates/upgrade-1.3.0.php');
         require_once(WEPOS_INCLUDES . '/Admin/Updates/upgrade-1.3.6.php');
         require_once(WEPOS_INCLUDES . '/Admin/Updates/upgrade-1.3.8.php');
+        require_once(WEPOS_INCLUDES . '/Admin/Updates/upgrade-1.3.9.php');
     }
 
     /**

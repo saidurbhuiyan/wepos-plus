@@ -266,7 +266,7 @@
                     <span v-if="item.editPrice" class="input-addon">
                       <span class="currency">€</span>
                       <input type="number"
-                             :min="minimumPrice(item)"
+                             min="0"
                              step="1"
                              :value="item[selectPrice(item)]"
                              @input="updatePrice($event.target.value, item)"
@@ -786,7 +786,7 @@
                 </template>
               </div>
 
-              <template v-if="orderdata.payment_method=='wepos_cash' || orderdata.payment_method=='wepos_card'">
+              <template v-if="orderdata.payment_method==='wepos_cash' || orderdata.payment_method==='wepos_card' || orderdata.payment_method==='wepos_cash_card'">
                 {{ /** Partial Payment **/ }}
                 <div class="payment-option">
                   <div v-if="settings.wepos_general.enable_partial_payment === 'yes'" class="payment-type-wrapper">
@@ -805,12 +805,31 @@
                   <div class="payment-amount">
                     <div class="input-part">
                       <div class="input-wrap">
-                        <p>{{ __('Amount', 'wepos') }}</p>
-                        <div class="input-addon">
-                          <span class="currency">{{ wepos.currency_format_symbol }}</span>
-                          <input id="input-cash-amount" type="text" v-model="cashAmount" ref="cashamount">
+                        <template v-if="orderdata.payment_method === 'wepos_cash_card'" >
+                          <div>
+                            <p>{{ __(('Cash'), 'wepos') }}</p>
+                            <div class="input-addon">
+                              <span class="currency">{{ wepos.currency_format_symbol }}</span>
+                              <input id="input-cash-amount" type="text" v-model="cashCardAmount.cash">
+                            </div>
+                          </div>
+                          <div>
+                          <p>{{ __('Card', 'wepos') }}</p>
+                          <div class="input-addon">
+                            <span class="currency">{{ wepos.currency_format_symbol }}</span>
+                            <input id="input-card-amount" type="text" v-model="cashCardAmount.card">
+                          </div>
+                          </div>
+                        </template>
+                        <div v-else>
+                          <p>{{ __(('Amount'), 'wepos') }}</p>
+                          <div class="input-addon">
+                            <span class="currency">{{ wepos.currency_format_symbol }}</span>
+                            <input id="input-cash-amount" type="text" v-model="cashAmount">
+                          </div>
                         </div>
                       </div>
+
                     </div>
                     <div v-if="dueAmountPartial > 0 && paymentType === 'partial'" class="due-money">
                       <p>{{ __('Due money', 'wepos') }}: {{ formatPrice(dueAmountPartial) }}</p>
@@ -939,6 +958,10 @@ export default {
       AvailableExpiryData: null,
       selectedVendorType: 'regular',
       searchedProducts : false,
+      cashCardAmount: {
+        card: '',
+        cash: ''
+      }
 
     }
   },
@@ -1045,10 +1068,24 @@ export default {
     'selectedGateway'(newdata, olddata) {
       var gateway = weLo_.find(this.availableGateways, {'id': newdata});
       this.$store.dispatch('Order/setGatewayAction', gateway);
+      this.cashCardAmount = {
+        card: '',
+        cash: ''
+      }
+      this.cashAmount = ''
     },
 
     cashAmount(newdata, olddata) {
       this.ableToProcess();
+    },
+
+    cashCardAmount: {
+      handler(newdata, olddata) {
+        if (newdata.card !== '' || newdata.cash !== '') {
+          this.cashAmount = (parseFloat(newdata.card) + parseFloat(newdata.cash)).toFixed(2)
+        }
+      },
+      deep: true,
     },
 
     /* partial payment */
@@ -1078,7 +1115,7 @@ export default {
 
     updatePrice(value, item) {
       const priceKey = this.selectPrice(item);
-      if (this.minimumPrice(item) >= value) return;
+      //if (this.minimumPrice(item) >= value) return;
       item[priceKey] = value;
     },
 
@@ -1152,6 +1189,10 @@ export default {
 
       this.showPaymentReceipt = false;
       this.cashAmount = '';
+      this.cashCardAmount = {
+        card: '',
+        cash: ''
+      }
       this.eventBus.$emit('emptycart', this.orderdata);
       this.closeQuickMenu();
     },
@@ -1168,7 +1209,7 @@ export default {
     ableToProcess() {
       let canProcess = this.cartdata.line_items.length > 0 && this.isSelectGateway();
 
-      if (this.selectedGateway === 'wepos_cash') {
+      if (this.selectedGateway === 'wepos_cash' || this.selectedGateway === 'wepos_card' || this.selectedGateway === 'wepos_cash_card') {
         canProcess = (this.unFormat(this.cashAmount)
                 >= this.truncateNumber(this.$store.getters['Cart/getTotal']) || this.paymentType === 'partial')
             && canProcess;
@@ -1205,6 +1246,10 @@ export default {
               {
                 key: '_wepos_cash_paid_amount',
                 value: this.unFormat( self.cashAmount).toString()
+              },
+              {
+                key: '_wepos_cash_card_paid_amount',
+                value: self.cashCardAmount
               },
               {
                 key: '_wepos_cash_payment_type',
@@ -1275,6 +1320,7 @@ export default {
                       order_date: response.date_created,
                       customer_id: response.customer_id,
                       cashamount: this.unFormat( this.cashAmount).toString(),
+                      cash_card_amount : this.cashCardAmount,
                       changeamount: this.changeAmount.toString(),
                       /* partial payment */
                       dueamount: this.dueAmountPartial.toString(),

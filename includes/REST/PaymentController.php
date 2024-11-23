@@ -120,9 +120,13 @@ class PaymentController extends \WC_REST_Orders_Controller {
 
 		// update product expiry
 		$this->update_product_expiry($order->get_meta('_wepos_product_expiry_data'));
-        insert_partial_payment_stat($request['id'], $order->get_meta('_wepos_cash_paid_amount'), $chosen_gateway->title);
+
+        insert_partial_payment_stat($request['id'], $order->get_meta('_wepos_cash_paid_amount'), $chosen_gateway->title,0, $order->get_meta('_wepos_cash_card_paid_amount'));
+
         $due = (float)$order->get_total() - (float)$order->get_meta('_wepos_cash_paid_amount');
+
         $partial_payment_stats = get_partial_payment_stats($order->ID);
+
 		if ($due > 0 && $order->get_meta('_wepos_cash_payment_type') === 'partial') {
 			$order->update_status( 'partial', __( 'Partial Payment collected via cash', 'wepos' ) );
 

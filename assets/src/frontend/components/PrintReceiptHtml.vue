@@ -134,9 +134,11 @@
                       <td colspan="3">{{ __( 'Payment Type', 'wepos' ) }}</td>
                       <td class="price">{{ printdata.paymenttype === 'partial' ? 'Partial Payment' : 'Full Payment' }}</td>
                     </tr>
-                    <template v-if="printdata.gateway.id === 'wepos_cash' || printdata.gateway.id === 'wepos_card'">
-                        <tr>
-                            <td colspan="3">{{ __( printdata.gateway.id ==='wepos_cash' ? 'Cash Given' : 'Paid Amount', 'wepos' ) }}</td>
+                    <template v-if="printdata.gateway.id === 'wepos_cash' || printdata.gateway.id === 'wepos_card' || printdata.gateway.id === 'wepos_cash_card'">
+
+                      <tr>
+                            <td colspan="3" v-if="printdata.gateway.id === 'wepos_cash_card'">{{ __( 'Paid Amount (Cash: '+formatPrice(printdata.cash_card_amount.cash)+' + Card: '+formatPrice(printdata.cash_card_amount.card)+')' , 'wepos' ) }}</td>
+                            <td colspan="3" v-else>{{ __( printdata.gateway.id ==='wepos_cash' ? 'Cash Given' : 'Paid Amount', 'wepos' ) }}</td>
                             <td class="price">{{ formatPrice( printdata.cashamount ) }}</td>
                         </tr>
                         {{ /* partial payment */}}
@@ -216,7 +218,7 @@ export default {
             .map(coupon => parseFloat(coupon.total))
             .reduce((sum, value) => sum + value, 0);
 
-        return (Math.abs(discount && discount.length > 0 ? discount  : 0)).toFixed(2);
+        return (Math.abs(discount ? discount  : 0)).toFixed(2);
       },
 
       hasProductDiscount(productId) {
